@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.shiver.aibot.event.impl;
+package net.stevesoltys.aibot.event.impl;
 
-import net.shiver.aibot.event.Event;
+import net.stevesoltys.aibot.event.Event;
 import net.shiver.ircbot.event.impl.ChatEvent;
 
 /**

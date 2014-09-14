@@ -1,4 +1,4 @@
-package net.shiver.aibot.util.xml;
+package net.stevesoltys.aibot.util.xml;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;

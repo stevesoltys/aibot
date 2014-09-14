@@ -1,4 +1,4 @@
-java_import 'net.shiver.aibot.util.WolframAlphaUtility'
+java_import 'net.stevesoltys.aibot.util.WolframAlphaUtility'
 
 on :event, :command do |bot, event|
   if event.command != 'wolfram'

@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.shiver.aibot.event;
+package net.stevesoltys.aibot.event;
 
 
-import net.shiver.aibot.util.plugin.DependencyException;
-import net.shiver.aibot.util.plugin.PluginContext;
-import net.shiver.aibot.util.plugin.PluginManager;
+import net.stevesoltys.aibot.util.plugin.DependencyException;
+import net.stevesoltys.aibot.util.plugin.PluginContext;
+import net.stevesoltys.aibot.util.plugin.PluginManager;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

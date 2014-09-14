@@ -1,4 +1,4 @@
-package net.shiver.aibot.util.plugin;
+package net.stevesoltys.aibot.util.plugin;
 
 import org.jruby.Ruby;
 import org.jruby.embed.ScriptingContainer;

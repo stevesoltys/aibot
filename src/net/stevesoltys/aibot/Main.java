@@ -1,12 +1,12 @@
-package net.shiver.aibot;
+package net.stevesoltys.aibot;
 
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
-import net.shiver.aibot.irc.IRCBot;
-import net.shiver.aibot.util.Configuration;
+import net.stevesoltys.aibot.irc.IRCBot;
+import net.stevesoltys.aibot.util.Configuration;
 import org.jdom2.JDOMException;
 
 import java.io.IOException;

@@ -1,8 +1,8 @@
-package net.shiver.aibot.util.plugin;
+package net.stevesoltys.aibot.util.plugin;
 
 
-import net.shiver.aibot.event.EventHandler;
-import net.shiver.aibot.event.EventManager;
+import net.stevesoltys.aibot.event.EventHandler;
+import net.stevesoltys.aibot.event.EventManager;
 
 /**
  *

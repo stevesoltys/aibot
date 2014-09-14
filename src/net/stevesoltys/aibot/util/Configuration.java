@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.shiver.aibot.util;
+package net.stevesoltys.aibot.util;
 
 import java.io.FileInputStream;
 import java.io.IOException;

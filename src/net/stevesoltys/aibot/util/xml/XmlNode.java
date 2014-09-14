@@ -1,4 +1,4 @@
-package net.shiver.aibot.util.xml;
+package net.stevesoltys.aibot.util.xml;
 
 import java.util.*;
 

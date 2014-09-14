@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.shiver.aibot.irc;
+package net.stevesoltys.aibot.irc;
 
-import net.shiver.aibot.event.impl.CommandEvent;
-import net.shiver.aibot.event.impl.ReceiveMessageEvent;
-import net.shiver.aibot.task.Task;
-import net.shiver.aibot.task.TaskManager;
-import net.shiver.aibot.util.Configuration;
-import net.shiver.aibot.event.EventManager;
+import net.stevesoltys.aibot.event.impl.CommandEvent;
+import net.stevesoltys.aibot.event.impl.ReceiveMessageEvent;
+import net.stevesoltys.aibot.task.Task;
+import net.stevesoltys.aibot.task.TaskManager;
+import net.stevesoltys.aibot.util.Configuration;
+import net.stevesoltys.aibot.event.EventManager;
 import net.shiver.ircbot.Bot;
 import net.shiver.ircbot.event.impl.*;
 import net.shiver.ircbot.net.Session;

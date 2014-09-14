@@ -1,5 +1,5 @@
-java_import 'net.shiver.aibot.irc.IRCBot'
-java_import 'net.shiver.aibot.event.EventManager'
+java_import 'net.stevesoltys.aibot.irc.IRCBot'
+java_import 'net.stevesoltys.aibot.event.EventManager'
 java_import 'java.lang.System'
 
 on :event, :command do |bot, event|

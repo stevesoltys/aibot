@@ -1,8 +1,8 @@
-package net.shiver.aibot.util.plugin;
+package net.stevesoltys.aibot.util.plugin;
 
 
-import net.shiver.aibot.util.xml.XmlNode;
-import net.shiver.aibot.util.xml.XmlParser;
+import net.stevesoltys.aibot.util.xml.XmlNode;
+import net.stevesoltys.aibot.util.xml.XmlParser;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

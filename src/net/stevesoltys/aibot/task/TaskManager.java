@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.shiver.aibot.task;
+package net.stevesoltys.aibot.task;
 
 import java.util.HashMap;
 import java.util.Map;

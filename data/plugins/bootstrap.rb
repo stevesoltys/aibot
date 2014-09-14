@@ -13,9 +13,9 @@
 # *****************************************************************************
 
 require 'java'
-java_import 'net.shiver.aibot.event.EventHandler'
-java_import 'net.shiver.aibot.task.Task'
-java_import 'net.shiver.aibot.task.TaskManager'
+java_import 'net.stevesoltys.aibot.event.EventHandler'
+java_import 'net.stevesoltys.aibot.task.Task'
+java_import 'net.stevesoltys.aibot.task.TaskManager'
 java_import 'java.util.concurrent.TimeUnit'
 
 # Extends the (Ruby) String class with a method to convert a lower case,

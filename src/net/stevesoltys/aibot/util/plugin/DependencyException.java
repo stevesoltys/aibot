@@ -1,4 +1,4 @@
-package net.shiver.aibot.util.plugin;
+package net.stevesoltys.aibot.util.plugin;
 
 /**
  * An {@link Exception} which is thrown when a dependency cannot be resolved,
