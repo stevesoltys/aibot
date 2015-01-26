@@ -6,9 +6,6 @@
 ## Directory-based project format
 .idea/
 
-data/responses.txt
-data/config.ini
-
 # if you remove the above rule, at least ignore user-specific stuff:
 # .idea/workspace.xml
 # .idea/tasks.xml
@@ -27,10 +24,12 @@ data/config.ini
 *.txt
 
 ## Additional for IntelliJ
-out/
-bin/
-gen/
-res/
+pkg/
+run
+#out/
+#bin/
+#gen/
+#res/
 
 ### Java ###
 *.class

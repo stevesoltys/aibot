@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+require 'aibot'
+require 'aibot/io/store/serialize_data_store'
+require 'aibot/algorithm/markov'
+require 'aibot/protocol/irc/irc_bot'
+require 'aibot/protocol/irc/plugins/respond'
+require 'aibot/protocol/irc/plugins/learn'
+require 'cinch/plugins/urbandictionary'
+require 'cinch/plugins/identify'
+
+##
+# The path to our data store file.
+DATA_STORE_FILE = 'data/data_store'
+
+##
+# The data store for our bot.
+data_store = AIBot::SerializeDataStore.new
+data_store.load(:file => DATA_STORE_FILE) if File.exists?(DATA_STORE_FILE)
+
+##
+# The learning and response algorithms for our bot.
+learning_algorithm = AIBot::MarkovLearningAlgorithm.new
+response_algorithm = AIBot::MarkovResponseAlgorithm.new
+
+##
+# Our bot instance.
+bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |config|
+  config.realname = 'aibot'
+  config.nick = 'aibot'
+  config.user = 'aibot'
+  config.server = 'irc.freenode.org'
+  config.channels = ['#rs']
+  config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
+                            Cinch::Plugins::Response]
+  config.plugins.prefix = /coderbot.*/
+end
+
+##
+# A SIGINT handler.
+trap 'SIGINT' do
+  bot.stop
+end
+
+##
+# A SIGTERM handler.
+trap 'SIGTERM' do
+  bot.stop
+end
+
+# Time to start the bot!
+bot.start
