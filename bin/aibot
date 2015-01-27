@@ -64,20 +64,20 @@ threads = []
 
 # We loop through each network and connect on a new thread.
 config['networks'].each do |name, conf|
-  puts "Connecting to network: '#{name}'."
-  bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
-    bot_config.realname = conf['name']
-    bot_config.nick = conf['nick']
-    bot_config.user = conf['user']
-    bot_config.server = conf['server']
-    bot_config.channels = conf['channels']
-    bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
-                                  Cinch::Plugins::Response, Cinch::Plugins::RussianRoulette]
-    bot_config.plugins.prefix = /#{conf['nick']}.*/
-  end
-
-  # Time to start the bot!
   threads << Thread.new do
+    puts "Connecting to network: '#{name}'."
+    bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
+      bot_config.realname = conf['name']
+      bot_config.nick = conf['nick']
+      bot_config.user = conf['user']
+      bot_config.server = conf['server']
+      bot_config.channels = conf['channels']
+      bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
+                                    Cinch::Plugins::Response, Cinch::Plugins::RussianRoulette]
+      bot_config.plugins.prefix = /#{conf['nick']}.*/
+    end
+
+    # Time to start the bot!
     bot.start
   end
 end
