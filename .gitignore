@@ -24,7 +24,6 @@
 *.txt
 
 ## Additional for IntelliJ
-data/data_store
 pkg/
 run
 #out/

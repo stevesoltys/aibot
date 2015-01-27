@@ -47,6 +47,22 @@ rescue Psych::SyntaxError
   config = {}
 end
 
+# A SIGINT handler.
+trap 'SIGINT' do
+  data_store.save :file => DATA_STORE_FILE
+  exit 1
+end
+
+# A SIGTERM handler.
+trap 'SIGTERM' do
+  data_store.save :file => DATA_STORE_FILE
+  exit 1
+end
+
+# Our threads that we'll be creating for each network.
+threads = []
+
+# We loop through each network and connect on a new thread.
 config['networks'].each do |name, conf|
   puts "Connecting to network: '#{name}'."
   bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
@@ -60,18 +76,13 @@ config['networks'].each do |name, conf|
     bot_config.plugins.prefix = /#{conf['nick']}.*/
   end
 
-  # A SIGINT handler.
-  trap 'SIGINT' do
-    data_store.save :file => DATA_STORE_FILE
-    exit 1
-  end
-
-  # A SIGTERM handler.
-  trap 'SIGTERM' do
-    data_store.save :file => DATA_STORE_FILE
-    exit 1
-  end
-
   # Time to start the bot!
-  bot.start
+  threads << Thread.new do
+    bot.start
+  end
+end
+
+# We wait for the threads to join to exit.
+threads.each do |thread|
+  thread.join
 end
