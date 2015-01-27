@@ -1,4 +1,4 @@
 require 'aibot/aibot'
-require 'aibot/context'
-require 'aibot/data_store'
-require 'aibot/algorithm'
+require 'aibot/chat/context'
+require 'aibot/chat/algorithm'
+require 'aibot/io/data_store'

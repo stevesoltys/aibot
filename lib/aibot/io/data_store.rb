@@ -1,33 +1,27 @@
 module AIBot
   class DataStore
-    attr_reader :data
-
-    def initialize
-      @data = {}
-    end
-
     ##
     # Gets the list of keys for this data store.
     def keys
-      data.keys
+      raise 'SubclassResponsibility'
     end
 
     ##
     # Checks if this data store has a given key.
     def has?(key)
-      data.include? key
+      raise 'SubclassResponsibility'
     end
 
     ##
     # Gets data for a given key from this store.
     def get(key)
-      data[key]
+      raise 'SubclassResponsibility'
     end
 
     ##
     # Puts data in this store, given the key and value.
     def put(key, value)
-      data[key] = value
+      raise 'SubclassResponsibility'
     end
 
     ##

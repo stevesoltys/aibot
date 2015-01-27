@@ -1,4 +1,6 @@
 module AIBot
+  ##
+  # Obsolete.
   class SerializedDataStore < DataStore
     ##
     # Loads the data for this store, given the file path.

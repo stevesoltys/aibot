@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'aibot'
-require 'aibot/io/store/serialized_data_store'
+require 'aibot/io/store/pstore_data_store'
 require 'aibot/chat/algorithm/markov'
 require 'aibot/protocol/irc/irc_bot'
 require 'aibot/protocol/irc/plugins/respond'
@@ -8,7 +8,6 @@ require 'aibot/protocol/irc/plugins/learn'
 require 'aibot/protocol/irc/plugins/russian_roulette'
 require 'cinch/plugins/urbandictionary'
 require 'cinch/plugins/identify'
-require 'rufus-scheduler'
 require 'yaml'
 
 # Configuration paths.
@@ -20,18 +19,11 @@ DATA_STORE_FILE = File.join(CONFIGURATION_DIRECTORY, 'data_store')
 Dir.mkdir(CONFIGURATION_DIRECTORY, 0700) unless File.exists?(CONFIGURATION_DIRECTORY)
 
 # The data store for our bot.
-data_store = AIBot::SerializedDataStore.new
+data_store = AIBot::PStoreDataStore.new
 
 # Load our data store, if we have one.
-data_store.load(:file => DATA_STORE_FILE) if File.exists?(DATA_STORE_FILE)
-
-# A scheduler used for saving our data store.
-scheduler = Rufus::Scheduler.new
-
-# We save every minute.
-scheduler.every '30s' do
-  data_store.save :file => DATA_STORE_FILE
-end
+File.new(DATA_STORE_FILE, 'w') unless File.exists?(DATA_STORE_FILE)
+data_store.load(:file => DATA_STORE_FILE)
 
 # The learning and response algorithms for our bot.
 learning_algorithm = AIBot::MarkovLearningAlgorithm.new
@@ -47,25 +39,14 @@ rescue Psych::SyntaxError
   config = {}
 end
 
-# A SIGINT handler.
-trap 'SIGINT' do
-  data_store.save :file => DATA_STORE_FILE
-  exit 1
-end
-
-# A SIGTERM handler.
-trap 'SIGTERM' do
-  data_store.save :file => DATA_STORE_FILE
-  exit 1
-end
-
 # Our threads that we'll be creating for each network.
-threads = []
+network_threads = []
 
 # We loop through each network and connect on a new thread.
 config['networks'].each do |name, conf|
-  threads << Thread.new do
-    puts "Connecting to network: '#{name}'."
+  # We iterate through the networks and create a bot thread for each.
+  network_threads << Thread.new do
+    # We create our bot.
     bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
       bot_config.realname = conf['name']
       bot_config.nick = conf['nick']
@@ -82,7 +63,17 @@ config['networks'].each do |name, conf|
   end
 end
 
-# We wait for the threads to join to exit.
-threads.each do |thread|
+# A SIGINT handler.
+trap 'SIGINT' do
+  exit 1
+end
+
+# A SIGTERM handler.
+trap 'SIGTERM' do
+  exit 1
+end
+
+# We wait for the network threads to join.
+network_threads.each do |thread|
   thread.join
 end
