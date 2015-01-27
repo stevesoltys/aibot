@@ -1,51 +1,77 @@
 #!/usr/bin/env ruby
 require 'aibot'
-require 'aibot/io/store/serialize_data_store'
-require 'aibot/algorithm/markov'
+require 'aibot/io/store/serialized_data_store'
+require 'aibot/chat/algorithm/markov'
 require 'aibot/protocol/irc/irc_bot'
 require 'aibot/protocol/irc/plugins/respond'
 require 'aibot/protocol/irc/plugins/learn'
+require 'aibot/protocol/irc/plugins/russian_roulette'
 require 'cinch/plugins/urbandictionary'
 require 'cinch/plugins/identify'
+require 'rufus-scheduler'
+require 'yaml'
 
-##
-# The path to our data store file.
-DATA_STORE_FILE = 'data/data_store'
+# Configuration paths.
+CONFIGURATION_DIRECTORY = File.join(Dir.home, '.aibot')
+CONFIGURATION_FILE = File.join(CONFIGURATION_DIRECTORY, 'config')
+DATA_STORE_FILE = File.join(CONFIGURATION_DIRECTORY, 'data_store')
 
-##
+# Creates our configuration directory within the home directory, if we need to.
+Dir.mkdir(CONFIGURATION_DIRECTORY, 0700) unless File.exists?(CONFIGURATION_DIRECTORY)
+
 # The data store for our bot.
-data_store = AIBot::SerializeDataStore.new
+data_store = AIBot::SerializedDataStore.new
+
+# Load our data store, if we have one.
 data_store.load(:file => DATA_STORE_FILE) if File.exists?(DATA_STORE_FILE)
 
-##
+# A scheduler used for saving our data store.
+scheduler = Rufus::Scheduler.new
+
+# We save every minute.
+scheduler.every '30s' do
+  data_store.save :file => DATA_STORE_FILE
+end
+
 # The learning and response algorithms for our bot.
 learning_algorithm = AIBot::MarkovLearningAlgorithm.new
 response_algorithm = AIBot::MarkovResponseAlgorithm.new
 
-##
-# Our bot instance.
-bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |config|
-  config.realname = 'aibot'
-  config.nick = 'aibot'
-  config.user = 'aibot'
-  config.server = 'irc.freenode.org'
-  config.channels = ['#rs']
-  config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
-                            Cinch::Plugins::Response]
-  config.plugins.prefix = /coderbot.*/
+# Time to load our configuration
+begin
+  config = YAML.load_file(CONFIGURATION_FILE)
+rescue Errno::ENOENT
+  config = {}
+rescue Psych::SyntaxError
+  puts 'Configuration file contains invalid syntax. Using defaults!'
+  config = {}
 end
 
-##
-# A SIGINT handler.
-trap 'SIGINT' do
-  bot.stop
-end
+config['networks'].each do |name, conf|
+  puts "Connecting to network: '#{name}'."
+  bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
+    bot_config.realname = conf['name']
+    bot_config.nick = conf['nick']
+    bot_config.user = conf['user']
+    bot_config.server = conf['server']
+    bot_config.channels = conf['channels']
+    bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
+                                  Cinch::Plugins::Response, Cinch::Plugins::RussianRoulette]
+    bot_config.plugins.prefix = /#{conf['nick']}.*/
+  end
 
-##
-# A SIGTERM handler.
-trap 'SIGTERM' do
-  bot.stop
-end
+  # A SIGINT handler.
+  trap 'SIGINT' do
+    data_store.save :file => DATA_STORE_FILE
+    exit 1
+  end
 
-# Time to start the bot!
-bot.start
+  # A SIGTERM handler.
+  trap 'SIGTERM' do
+    data_store.save :file => DATA_STORE_FILE
+    exit 1
+  end
+
+  # Time to start the bot!
+  bot.start
+end

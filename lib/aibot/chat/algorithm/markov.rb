@@ -34,7 +34,7 @@ module AIBot
     def get_input_pairs(data_store, input)
       pairs = get_pairs(input)
       pairs.each_key do |pair|
-        pairs.delete pair unless data_store.has(pair)
+        pairs.delete pair unless data_store.has?(pair)
       end
 
       if pairs.empty?
@@ -64,7 +64,7 @@ module AIBot
       unless has_hyperlink? input
         input = input.downcase #gsub(/[[:punct:]]/, '')
         get_pairs(input).each do |pair, word|
-          data_store.put(pair, []) unless data_store.has(pair)
+          data_store.put(pair, []) unless data_store.has?(pair)
           data_store.get(pair) << word
         end
       end
@@ -93,7 +93,7 @@ module AIBot
       end
       pair = original_pair
       max_size = rand(14) + 3
-      while data_store.has(pair) and response.split.size < max_size
+      while data_store.has?(pair) and response.split.size < max_size
         word = data_store.get(pair).sample
         data_store.get(pair).shuffle.each do |wrd|
           if input.split.include? wrd
