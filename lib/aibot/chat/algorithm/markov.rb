@@ -64,8 +64,9 @@ module AIBot
       unless has_hyperlink? input
         input = input.downcase #gsub(/[[:punct:]]/, '')
         get_pairs(input).each do |pair, word|
-          data_store.put(pair, []) unless data_store.has?(pair)
-          data_store.get(pair) << word
+          words = data_store.has?(pair) ? data_store.get(pair) : []
+          words << word
+          data_store.put(pair, words)
         end
       end
     end
