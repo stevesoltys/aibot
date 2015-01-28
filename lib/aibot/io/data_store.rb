@@ -1,5 +1,6 @@
 module AIBot
   class DataStore
+
     ##
     # Gets the list of keys for this data store.
     def keys

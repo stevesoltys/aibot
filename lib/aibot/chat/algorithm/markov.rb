@@ -86,9 +86,8 @@ module AIBot
       response = "#{pair[0]} #{pair[1]}"
       if rand < 0.5
         data_store.keys.each do |brain_pair|
-          words = data_store.get(brain_pair)
-          if words.include? pair[0]
-            response = "#{brain_pair[0]} #{brain_pair[1]} #{response}"
+          if brain_pair[1].eql? pair[0]
+            response = "#{brain_pair[0]} #{response}"
             break
           end
         end
