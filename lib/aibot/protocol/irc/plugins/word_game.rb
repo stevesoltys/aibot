@@ -7,7 +7,7 @@ module Cinch::Plugins
       if config[:words]
         @dict = Dictionary.new config[:words]
       else
-        dictionary_file = config[:dictionary_file] || '/usr/share/dict/words'
+        dictionary_file = config[:dictionary_file] || '~/.aibot/words.txt'
         @dict = Dictionary.from_file dictionary_file
       end
     end
