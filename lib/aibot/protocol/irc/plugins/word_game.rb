@@ -1,5 +1,3 @@
-require 'cinch'
-
 module Cinch::Plugins
   class WordGame
     include Cinch::Plugin
@@ -9,7 +7,7 @@ module Cinch::Plugins
       if config[:words]
         @dict = Dictionary.new config[:words]
       else
-        dictionary_file = config[:dictionary_file] || "/etc/dictionaries-common/words"
+        dictionary_file = config[:dictionary_file] || '/usr/share/dict/words'
         @dict = Dictionary.from_file dictionary_file
       end
     end
@@ -32,7 +30,7 @@ Have fun!
 
     match(/word start/, :method => :start)
     def start(m)
-      m.reply "Starting a new word game"
+      m.reply 'Starting a new word game'
       @word = Word.new @dict.random_word
     end
 
@@ -86,7 +84,7 @@ Have fun!
 
     class Word < Struct.new(:word)
       def before_or_after?(other_word)
-        word < other_word ? "before" : "after"
+        word < other_word ? 'before' : 'after'
       end
 
       def ==(other_word)
