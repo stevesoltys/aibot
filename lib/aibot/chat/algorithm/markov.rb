@@ -96,8 +96,9 @@ module AIBot
       pair = original_pair
       max_size = rand(14) + 3
       while data_store.has?(pair) and response.split.size < max_size
-        word = data_store.get(pair).sample
-        data_store.get(pair).shuffle.each do |wrd|
+        words = data_store.get(pair)
+        word = words.sample
+        words.shuffle.each do |wrd|
           if input.split.include? wrd
             word = wrd
             break
