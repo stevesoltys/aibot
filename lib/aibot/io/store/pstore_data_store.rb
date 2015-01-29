@@ -33,7 +33,7 @@ module AIBot
     ##
     # Loads our <i>PStore</i>.
     def load(params=nil)
-      @store = PStore.new(params[:file])
+      @store = PStore.new(params[:file], true)
     end
 
     ##

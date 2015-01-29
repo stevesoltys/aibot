@@ -6,9 +6,11 @@ module Cinch
       include Cinch::Plugin
       PLUGIN_NAMES = ['urban', 'rr', 'word'] # we want to avoid matching other plugins
 
-      match /(reply|talk about|talk|speak|respond|tell me about|tell me)*(.*)/
-
-      def execute(msg, command, topic)
+      match(/.*/, :method => :respond)
+      def respond(msg)
+        split_message = msg.message.split
+        split_message.delete(split_message.first)
+        topic = split_message.join(' ')
         PLUGIN_NAMES.each do |name| #TODO: figure out a better way!!
           return if topic.downcase.start_with? name
         end
