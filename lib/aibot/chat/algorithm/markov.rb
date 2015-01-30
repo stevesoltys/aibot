@@ -33,24 +33,24 @@ module AIBot
     # only returns pairs which our database already contains.
     def get_input_pairs(data_store, input)
       pairs = get_pairs(input)
-        pairs.each_key do |pair|
-          pairs.delete pair unless data_store.has?(pair)
-        end
+      pairs.each_key do |pair|
+        pairs.delete pair unless data_store.has?(pair)
+      end
 
-        if pairs.empty?
-          topics = input.split
-          data_store.keys.each do |pair|
-            if topics.include? pair[0].gsub(/[[:punct:]]/, '') or
-                topics.include? pair[1].gsub(/[[:punct:]]/, '')
-              pairs[pair] = data_store.get(pair)
-            end
+      if pairs.empty?
+        topics = input.split
+        data_store.keys.each do |pair|
+          if topics.include? pair[0].gsub(/[[:punct:]]/, '') or
+              topics.include? pair[1].gsub(/[[:punct:]]/, '')
+            pairs[pair] = data_store.get(pair)
           end
         end
+      end
 
-        if pairs.empty?
-          rand_pair = data_store.keys.sample
-          pairs[rand_pair] = data_store.get(rand_pair) if rand_pair
-        end
+      if pairs.empty?
+        rand_pair = data_store.keys.sample
+        pairs[rand_pair] = data_store.get(rand_pair) if rand_pair
+      end
       pairs
     end
   end
@@ -62,11 +62,13 @@ module AIBot
 
     def learn(data_store, input)
       unless has_hyperlink? input
-        input = input.downcase #gsub(/[[:punct:]]/, '')
-        get_pairs(input).each do |pair, word|
-          words = data_store.has?(pair) ? data_store.get(pair) : []
-          words << word
-          data_store.put(pair, words)
+        data_store.transaction do
+          input = input.downcase #gsub(/[[:punct:]]/, '')
+          get_pairs(input).each do |pair, word|
+            words = data_store.has?(pair) ? data_store.get(pair) : []
+            words << word
+            data_store.put(pair, words)
+          end
         end
       end
     end
