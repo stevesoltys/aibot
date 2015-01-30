@@ -5,29 +5,35 @@ module AIBot
     attr_reader :store
 
     ##
+    # Performs a transaction on this data store.
+    def transaction(&block)
+      store.transaction do
+        block.call
+      end
+    end
+
+    ##
     # Gets the list of keys for this data store.
     def keys
-      store.transaction { store.roots }
+      store.roots
     end
 
     ##
     # Checks if this data store has a given key.
     def has?(key)
-      store.transaction { store.root? key }
+      store.root? key
     end
 
     ##
     # Gets data for a given key from this store.
     def get(key)
-      store.transaction { store[key] }
+      store[key]
     end
 
     ##
     # Puts data in this store, given the key and value.
     def put(key, value)
-      store.transaction do
-        store[key] = value
-      end
+      store[key] = value
     end
 
     ##

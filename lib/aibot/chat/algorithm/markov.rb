@@ -33,24 +33,24 @@ module AIBot
     # only returns pairs which our database already contains.
     def get_input_pairs(data_store, input)
       pairs = get_pairs(input)
-      pairs.each_key do |pair|
-        pairs.delete pair unless data_store.has?(pair)
-      end
+        pairs.each_key do |pair|
+          pairs.delete pair unless data_store.has?(pair)
+        end
 
-      if pairs.empty?
-        topics = input.split
-        data_store.keys.each do |pair|
-          if topics.include? pair[0].gsub(/[[:punct:]]/, '') or
-              topics.include? pair[1].gsub(/[[:punct:]]/, '')
-            pairs[pair] = data_store.get(pair)
+        if pairs.empty?
+          topics = input.split
+          data_store.keys.each do |pair|
+            if topics.include? pair[0].gsub(/[[:punct:]]/, '') or
+                topics.include? pair[1].gsub(/[[:punct:]]/, '')
+              pairs[pair] = data_store.get(pair)
+            end
           end
         end
-      end
 
-      if pairs.empty?
-        rand_pair = data_store.keys.sample
-        pairs[rand_pair] = data_store.get(rand_pair) if rand_pair
-      end
+        if pairs.empty?
+          rand_pair = data_store.keys.sample
+          pairs[rand_pair] = data_store.get(rand_pair) if rand_pair
+        end
       pairs
     end
   end
@@ -78,35 +78,37 @@ module AIBot
     include MarkovUtil
 
     def respond(data_store, input, context)
-      input = input.gsub(/[[:punct:]]/, '').downcase
-      input_pairs = get_input_pairs(data_store, input)
-      return '' if input_pairs.empty?
-      pair = input_pairs.keys.sample
-      original_pair = pair
-      response = "#{pair[0]} #{pair[1]}"
-      if rand < 0.5
-        data_store.keys.each do |brain_pair|
-          if brain_pair[1].eql? pair[0]
-            response = "#{brain_pair[0]} #{response}"
-            break
+      data_store.transaction do
+        input = input.gsub(/[[:punct:]]/, '').downcase
+        input_pairs = get_input_pairs(data_store, input)
+        return '' if input_pairs.empty?
+        pair = input_pairs.keys.sample
+        original_pair = pair
+        response = "#{pair[0]} #{pair[1]}"
+        if rand < 0.5
+          data_store.keys.each do |brain_pair|
+            if brain_pair[1].eql? pair[0]
+              response = "#{brain_pair[0]} #{response}"
+              break
+            end
           end
         end
-      end
-      pair = original_pair
-      max_size = rand(14) + 3
-      while data_store.has?(pair) and response.split.size < max_size
-        words = data_store.get(pair)
-        word = words.sample
-        words.shuffle.each do |wrd|
-          if input.split.include? wrd
-            word = wrd
-            break
+        pair = original_pair
+        max_size = rand(14) + 3
+        while data_store.has?(pair) and response.split.size < max_size
+          words = data_store.get(pair)
+          word = words.sample
+          words.shuffle.each do |wrd|
+            if input.split.include? wrd
+              word = wrd
+              break
+            end
           end
+          response << " #{word}"
+          pair = pair[1], word
         end
-        response << " #{word}"
-        pair = pair[1], word
+        response.strip
       end
-      response.strip
     end
   end
 end
