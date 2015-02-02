@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'aibot'
 require 'aibot/io/store/pstore_data_store'
-require 'aibot/chat/algorithm/markov'
+require 'aibot/chat/algorithm/markov/markov'
 require 'aibot/protocol/irc/irc_bot'
 require 'aibot/protocol/irc/plugins/respond'
 require 'aibot/protocol/irc/plugins/learn'
@@ -36,8 +36,8 @@ begin
 rescue Errno::ENOENT
   config = {}
 rescue Psych::SyntaxError
-  puts 'Configuration file contains invalid syntax. Using defaults!'
-  config = {}
+  puts 'Configuration file contains invalid syntax. Exiting!'
+  exit 1
 end
 
 # Our threads that we'll be creating for each network.
@@ -45,7 +45,7 @@ network_threads = []
 
 # We loop through each network and connect on a new thread.
 config['networks'].each do |name, conf|
-  # We iterate through the networks and create a bot thread for each.
+  # We iterate through the networks and create a thread for each bot.
   network_threads << Thread.new do
     # We create our bot.
     bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
