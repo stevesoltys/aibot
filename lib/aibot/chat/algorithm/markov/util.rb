@@ -47,20 +47,16 @@ module AIBot
       triads = get_triad_hash(sentence).keys
       # next, we delete any triads that our data store doesn't contain
       triads.each { |triad| triads.delete(triad) unless data_store.has?(triad) }
-      # if our hash is empty, we look for triads that contain words in the sentence and add them
-      if triads.empty?
-        data_store.keys.each do |triad|
-          triad.each do |word|
-            # if our sentence contains a word that this one does, we add it
-            if sentence.split.include? word.remove_punctuation
-              triads << triad
-              break
-            end
-          end
-        end
+      # we look for triads that contain words in the sentence and add them
+      data_store.keys.each do |triad|
+        word_match_count = 0
+        # if our sentence contains a word that this triad does, we add to our match count
+        triad.each { |word| word_match_count += 1 if sentence.split.include?(word.remove_punctuation) }
+        # if two or more words matched, we add the triad to our list
+        triads << triad.clone if word_match_count >= 2
       end
       # if we still didn't find anything, we add a random triad
-      triads << data_store.keys.sample if triads.empty?
+      triads << data_store.keys.sample.clone if triads.empty?
       # time to return the triads
       triads
     end

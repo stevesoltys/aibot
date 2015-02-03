@@ -33,10 +33,10 @@ module AIBot
         # we get our bias triad list
         triads = get_triads(data_store, input)
         # next, we start our response with a random triad from our list
-        current_triad = triads.sample.clone
+        current_triad = triads.sample
         response = current_triad.join(' ')
         # randomly defines the max size of the response
-        max_size = rand(14) + 3
+        max_size = rand(12) + 6
         # we loop and add to our response, without going over the maximum size
         while data_store.has?(current_triad) && response.split.size < max_size
           words = data_store.get(current_triad)
