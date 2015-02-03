@@ -1,4 +1,15 @@
 class String
+  HYPERLINK_HOOKS = %w(http www)
+
+  ##
+  # Checks whether a given string contains a hyperlink.
+  def has_hyperlink?
+    HYPERLINK_HOOKS.each { |string|
+      return true if self.include?(string)
+    }
+    false
+  end
+
   ##
   # Removes all punctuation from this string.
   def remove_punctuation
@@ -8,17 +19,6 @@ end
 
 module AIBot
   module MarkovUtils
-    HYPERLINK_HOOKS = %w(http www)
-
-    ##
-    # Checks whether a given string contains a hyperlink.
-    def has_hyperlink?(message)
-      HYPERLINK_HOOKS.each do |string|
-        return true if message.include? string
-      end
-      false
-    end
-
     ##
     # Gets the <i>Triad</i> hash for a sentence.
     def get_triad_hash(sentence)

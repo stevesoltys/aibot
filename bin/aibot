@@ -54,7 +54,7 @@ config['networks'].each do |name, conf|
       bot_config.channels = conf['channels']
       bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
                                     Cinch::Plugins::Response]
-      bot_config.plugins.prefix = /#{conf['nick']}.*/
+      bot_config.plugins.prefix = /^::/
     end
 
     # Time to start the bot!

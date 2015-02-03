@@ -7,7 +7,7 @@ module AIBot
     include MarkovUtils
 
     def should_learn(input)
-      input.split.length >= 4 && !has_hyperlink?(input)
+      input.split.length >= 4 && !input.has_hyperlink?
     end
 
     def learn(data_store, input)

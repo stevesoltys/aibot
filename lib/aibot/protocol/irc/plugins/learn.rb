@@ -1,6 +1,8 @@
 module Cinch
   module Plugins
 
+    ##
+    # Cinch plugin which utilizes the learning algorithm to learn from users.
     class Learning
       include Cinch::Plugin
 
