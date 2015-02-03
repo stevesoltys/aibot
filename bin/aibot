@@ -5,8 +5,6 @@ require 'aibot/chat/algorithm/markov/markov'
 require 'aibot/protocol/irc/irc_bot'
 require 'aibot/protocol/irc/plugins/respond'
 require 'aibot/protocol/irc/plugins/learn'
-require 'aibot/protocol/irc/plugins/russian_roulette'
-require 'aibot/protocol/irc/plugins/word_game'
 require 'cinch/plugins/urbandictionary'
 require 'cinch/plugins/identify'
 require 'yaml'
@@ -55,8 +53,7 @@ config['networks'].each do |name, conf|
       bot_config.server = conf['server']
       bot_config.channels = conf['channels']
       bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
-                                    Cinch::Plugins::Response, Cinch::Plugins::RussianRoulette,
-                                    Cinch::Plugins::WordGame]
+                                    Cinch::Plugins::Response]
       bot_config.plugins.prefix = /#{conf['nick']}.*/
     end
 
