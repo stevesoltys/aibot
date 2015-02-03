@@ -53,7 +53,7 @@ module AIBot
         # if our sentence contains a word that this triad does, we add to our match count
         triad.each { |word| word_match_count += 1 if sentence.split.include?(word.remove_punctuation) }
         # if two or more words matched, we add the triad to our list
-        triads << triad.clone if word_match_count >= 2
+        triads << triad.clone if word_match_count >= (sentence.split.size == 1 ? 1 : 2)
       end
       # if we still didn't find anything, we add a random triad
       triads << data_store.keys.sample.clone if triads.empty?
