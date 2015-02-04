@@ -89,13 +89,12 @@ module AIBot
       pairs = get_pair_hash(sentence).keys
       # next, we delete any pairs that our data store doesn't contain
       pairs.each { |pair| pairs.delete(pair) unless data_store.has?(pair) }
-      # we look for pairs that contain words in the sentence and add them
-      data_store.keys.each do |triad|
-        word_match_count = 0
-        # if our sentence contains a word that this pair does, we add to our match count
-        triad.each { |word| word_match_count += 1 if sentence.split.include?(word.remove_punctuation) }
-        # if two or more words matched, we add the pair to our list
-        pairs << triad.clone if word_match_count >= (sentence.split.size == 1 ? 1 : 2)
+      # we look for pairs that contain words in the sentence and add them, if our pairs are empty
+      if pairs.empty?
+        data_store.keys.each do |pair|
+          # if our sentence contains a word that this pair does, we add it to our list
+          pair.each { |word| pairs << pair.clone if sentence.split.include?(word.remove_punctuation) }
+        end
       end
       # if we still didn't find anything, we add a random pair
       pairs << data_store.keys.sample.clone if pairs.empty?
