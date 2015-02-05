@@ -1,8 +1,21 @@
 require 'pstore'
 
-module AIBot
+module AIBot::Store::PStore
+  include AIBot::Store
+
   class PStoreDataStore < DataStore
     attr_reader :store
+
+    def initialize(configuration)
+      super configuration
+      if configuration[:file]
+        data_store_file = File.expand_path(configuration[:file])
+        File.new(data_store_file, 'w') unless File.exists?(data_store_file)
+        @store = PStore.new(data_store_file, true)
+      else
+        raise "Could not find 'file' entry in store configuration!"
+      end
+    end
 
     ##
     # Performs a transaction on this data store.
@@ -35,17 +48,11 @@ module AIBot
     def put(key, value)
       store[key] = value
     end
+  end
 
-    ##
-    # Loads our <i>PStore</i>.
-    def load(params=nil)
-      @store = PStore.new(params[:file], true)
-    end
-
-    ##
-    # Not necessary for <i>PStore</i>.
-    def save(params=nil)
-      raise 'PStore automatically saves changes, the save method is not necessary.'
-    end
+  ##
+  # Registers the IRC protocol.
+  AIBot::Store::register :pstore do |configuration|
+    PStoreDataStore.new configuration
   end
 end

@@ -17,21 +17,23 @@ class String
   end
 end
 
-module AIBot
+module AIBot::Algorithm::Markov
   module MarkovUtils
     ##
     # Gets the pair hash for a sentence.
     def get_pair_hash(sentence)
       sentence = sentence.downcase.strip.split
+      pair_hash = {}
       if sentence.size >= 3
-        pair_hash = {}
-        current_triad = sentence[0..1]
+        current_pair = sentence[0..1]
         sentence[2..sentence.length].each do |word|
-          pair_hash[current_triad.clone] = word
-          current_triad.shift
-          current_triad << word
+          pair_hash[current_pair.clone] = word
+          current_pair.shift
+          current_pair << word
         end
         pair_hash
+      elsif sentence.size == 2
+        {[sentence[0], sentence[1]] => []}
       else
         {}
       end

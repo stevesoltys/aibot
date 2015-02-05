@@ -1,78 +1,31 @@
 #!/usr/bin/env ruby
 require 'aibot'
-require 'aibot/io/store/pstore_data_store'
-require 'aibot/chat/algorithm/markov/markov'
-require 'aibot/protocol/irc/irc_bot'
-require 'aibot/protocol/irc/plugins/respond'
-require 'aibot/protocol/irc/plugins/learn'
-require 'cinch/plugins/urbandictionary'
-require 'cinch/plugins/identify'
 require 'yaml'
 
 # Configuration paths.
 CONFIGURATION_DIRECTORY = File.join(Dir.home, '.aibot')
 CONFIGURATION_FILE = File.join(CONFIGURATION_DIRECTORY, 'config')
-DATA_STORE_FILE = File.join(CONFIGURATION_DIRECTORY, 'data_store')
 
 # Creates our configuration directory within the home directory, if we need to.
 Dir.mkdir(CONFIGURATION_DIRECTORY, 0700) unless File.exists?(CONFIGURATION_DIRECTORY)
 
-# The data store for our bot.
-data_store = AIBot::PStoreDataStore.new
-
-# Load our data store, if we have one.
-File.new(DATA_STORE_FILE, 'w') unless File.exists?(DATA_STORE_FILE)
-data_store.load(:file => DATA_STORE_FILE)
-
-# The learning and response algorithms for our bot.
-learning_algorithm = AIBot::MarkovLearningAlgorithm.new
-response_algorithm = AIBot::MarkovResponseAlgorithm.new
-
-# Time to load our configuration
+# Time to load our configuration.
 begin
-  config = YAML.load_file(CONFIGURATION_FILE)
+  configuration = YAML.load_file(CONFIGURATION_FILE)
 rescue Errno::ENOENT
-  config = {}
+  configuration = {}
 rescue Psych::SyntaxError
   puts 'Configuration file contains invalid syntax. Exiting!'
   exit 1
 end
 
-# Our threads that we'll be creating for each network.
-network_threads = []
-
-# We loop through each network and connect on a new thread.
-config['networks'].each do |name, conf|
-  # We iterate through the networks and create a thread for each bot.
-  network_threads << Thread.new do
-    # We create our bot.
-    bot = AIBot::IRCBot.new data_store, learning_algorithm, response_algorithm do |bot_config|
-      bot_config.realname = conf['name']
-      bot_config.nick = conf['nick']
-      bot_config.user = conf['user']
-      bot_config.server = conf['server']
-      bot_config.channels = conf['channels']
-      bot_config.plugins.plugins = [Cinch::Plugins::UrbanDictionary, Cinch::Plugins::Learning,
-                                    Cinch::Plugins::Response]
-      bot_config.plugins.prefix = /^::/
-    end
-
-    # Time to start the bot!
-    bot.start
-  end
+# Now we create our bot with the loaded configuration.
+bot = AIBot::create configuration do
+  protocol :irc
+  algorithm :markov
+  data_store :pstore
 end
 
-# A SIGINT handler.
-trap 'SIGINT' do
-  exit 1
-end
+# Now we start the bot!
+bot.start
 
-# A SIGTERM handler.
-trap 'SIGTERM' do
-  exit 1
-end
-
-# We wait for the network threads to join.
-network_threads.each do |thread|
-  thread.join
-end

@@ -1,6 +1,6 @@
-require 'aibot/chat/algorithm/markov/util'
+module AIBot::Algorithm::Markov
+  include AIBot::Algorithm
 
-module AIBot
   ##
   # The Markov learning algorithm.
   class MarkovLearningAlgorithm < LearningAlgorithm
@@ -59,4 +59,8 @@ module AIBot
       end
     end
   end
+
+  ##
+  # Registers the algorithm under the :markov symbol.
+  AIBot::Algorithm::register :markov, MarkovLearningAlgorithm.new, MarkovResponseAlgorithm.new
 end
