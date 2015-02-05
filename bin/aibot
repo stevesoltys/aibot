@@ -13,7 +13,8 @@ Dir.mkdir(CONFIGURATION_DIRECTORY, 0700) unless File.exists?(CONFIGURATION_DIREC
 begin
   configuration = YAML.load_file(CONFIGURATION_FILE)
 rescue Errno::ENOENT
-  configuration = {}
+  puts 'Configuration file could not be found. Exiting!'
+  exit 1
 rescue Psych::SyntaxError
   puts 'Configuration file contains invalid syntax. Exiting!'
   exit 1

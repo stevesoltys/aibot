@@ -13,7 +13,7 @@ module AIBot::Algorithm::Markov
     def learn(data_store, input)
       if should_learn input
         data_store.transaction do
-          get_triad_hash(input.downcase).each do |pair, word|
+          get_pair_hash(input.downcase).each do |pair, word|
             words = data_store.has?(pair) ? data_store.get(pair) : []
             words << word unless words.include? word
             data_store.put(pair, words)

@@ -15,7 +15,7 @@ module AIBot::Protocol::IRC
     end
 
     ##
-    # Starts the IRC protocol
+    # Starts the IRC protocol.
     def start(aibot)
       if configuration[:networks]
         # Loop through our networks, creating an <i>IRCBot</i> from the configuration for each.
@@ -43,7 +43,7 @@ module AIBot::Protocol::IRC
               if message.include?(bot.nick)
                 msg.safe_reply aibot.respond(message.gsub(bot.nick, ''))
               else
-                aibot.learn(message) unless (message.has_hyperlink? || message.split.size < 3)
+                aibot.learn(message)
               end
             end
           end
