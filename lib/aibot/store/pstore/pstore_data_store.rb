@@ -51,7 +51,7 @@ module AIBot::Store::PStore
   end
 
   ##
-  # Registers the IRC protocol.
+  # Registers the PStore data store.
   AIBot::Store::register :pstore do |configuration|
     PStoreDataStore.new configuration
   end

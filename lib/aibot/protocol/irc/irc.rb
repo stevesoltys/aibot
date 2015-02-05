@@ -43,7 +43,7 @@ module AIBot::Protocol::IRC
               if message.include?(bot.nick)
                 msg.safe_reply aibot.respond(message.gsub(bot.nick, ''))
               else
-                aibot.learn(message)
+                aibot.learn(message) unless (message.has_hyperlink? || message.split.size < 3)
               end
             end
           end
