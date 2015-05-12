@@ -1,3 +1,3 @@
-scurses
+aibot
 ========
-a curses client for SoundCloud which creates radio stations from queries.
+a modular chatbot
