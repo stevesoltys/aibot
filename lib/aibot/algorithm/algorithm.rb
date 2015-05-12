@@ -9,22 +9,22 @@ module AIBot::Algorithm
 
   ##
   # Registers an algorithm which the bot can use.
-  def self.register(symbol, learn, respond)
-    ALGORITHMS[symbol] = {:learning => learn, :response => respond}
+  def self.register(symbol, algorithm)
+    ALGORITHMS[symbol] = algorithm
   end
 
   ##
-  # A response algorithm.
-  class ResponseAlgorithm
-    def respond(data_store, input, context)
+  # A chat algorithm.
+  class ChatAlgorithm
+    def init(data_store)
       raise 'SubclassResponsibility'
     end
-  end
 
-  ##
-  # A learning algorithm.
-  class LearningAlgorithm
     def learn(data_store, input)
+      raise 'SubclassResponsibility'
+    end
+
+    def respond(data_store, input, context)
       raise 'SubclassResponsibility'
     end
   end

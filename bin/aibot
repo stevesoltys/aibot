@@ -24,7 +24,6 @@ end
 bot = AIBot::create configuration do
   protocol :irc
   algorithm :markov
-  data_store :pstore
 end
 
 # Now we start the bot!

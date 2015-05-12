@@ -2,38 +2,39 @@ module AIBot
   ##
   # The main class for an AIBot. Contains the protocol, data store, and algorithm.
   class AIBot
-    attr_reader :protocol, :data_store, :algorithm
+    attr_reader :protocol, :algorithm,  :data_store
 
-    def initialize(protocol, data_store, algorithm, configuration)
+    def initialize(protocol, algorithm, configuration)
       raise "Configuration error! Could not find 'protocol' entry." unless configuration[:protocol]
       @protocol = Protocol::for(protocol, configuration[:protocol])
-      raise "Configuration error! Could not find 'store' entry." unless configuration[:store]
-      @data_store = Store::for(data_store, configuration[:store])
       @algorithm = Algorithm::for(algorithm)
+      raise "Configuration error! Could not find 'store' entry." unless configuration[:store]
+      @data_store = Store::SQLiteDataStore.new(configuration[:store])
     end
 
     ##
     # Starts this bot.
     def start
-      protocol.start self
+      @algorithm.init(@data_store)
+      @protocol.start self
     end
 
     ##
     # Stops this bot.
     def stop
-      protocol.stop
+      @protocol.stop
     end
 
     ##
     # Learns from the given input.
     def learn(input)
-      algorithm[:learning].learn data_store, input
+      @algorithm.learn(@data_store, input)
     end
 
     ##
     # Responds to the given input, with the option of context.
     def respond(input, context=nil)
-      algorithm[:response].respond data_store, input, context
+      @algorithm.respond(@data_store, input, context)
     end
   end
 end
