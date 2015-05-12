@@ -22,7 +22,7 @@ module AIBot::Algorithm::Markov
     ##
     # Gets the trigram hash for a sentence.
     def get_trigram_hash(sentence)
-      sentence = sentence.downcase.strip.split
+      sentence = sentence.downcase.strip.remove_punctuation.split
       pair_hash = {}
       if sentence.size >= 3
         current_pair = sentence[0..1]
