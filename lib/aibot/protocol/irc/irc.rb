@@ -41,24 +41,24 @@ module AIBot::Protocol::IRC
               bot = msg.bot
               message = msg.message
               if message.include?(bot.nick)
-                msg.safe_reply aibot.respond(message.gsub(bot.nick, ''))
+                msg.safe_reply(aibot.respond(message.gsub(bot.nick, '')))
               else
                 aibot.learn(message)
               end
             end
           end
-          bots << bot
+          @bots << bot
         end
 
         # Start our bots.
-        bots.each do |bot|
-          threads << Thread.new do
+        @bots.each do |bot|
+          @threads << Thread.new do
             bot.start
           end
         end
 
         # Wait (indefinitely) for the threads to join.
-        threads.each { |thread| thread.join }
+        @threads.each { |thread| thread.join }
       else
         raise "Could not find a 'networks' entry in the IRC configuration!"
       end
@@ -68,6 +68,6 @@ module AIBot::Protocol::IRC
   ##
   # Registers the IRC protocol.
   AIBot::Protocol::register :irc do |configuration|
-    IRC.new configuration
+    IRC.new(configuration)
   end
 end

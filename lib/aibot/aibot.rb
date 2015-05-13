@@ -16,7 +16,7 @@ module AIBot
     # Starts this bot.
     def start
       @algorithm.init(@data_store)
-      @protocol.start self
+      @protocol.start(self)
     end
 
     ##

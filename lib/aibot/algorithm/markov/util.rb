@@ -53,18 +53,21 @@ module AIBot::Algorithm::Markov
 
       # look for trigrams which are entirely contained in the sentence and add them
       sentence_trigram_hash.each do |pair, word|
-        trigrams.concat(data_store.execute("SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' AND third='#{word}'"))
+        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' AND third='#{word}'"
+        trigrams.concat(data_store.execute(query))
       end
 
       # look for trigrams which contain pairs in the sentence and add them, if the current list is empty
       sentence_trigram_hash.each do |pair, word|
-        trigrams.concat(data_store.execute("SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}'"))
+        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}'"
+        trigrams.concat(data_store.execute(query))
       end if trigrams.empty?
 
-      # look for trigrams which contain any words in the sentence and add them, if the current list is empty
+      # look for trigrams which contain any 'important' words in the sentence and add them
       sentence.split.each do |word|
-        trigrams.concat(data_store.execute("SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}'"))
-      end if trigrams.empty?
+        query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}'"
+        trigrams.concat(data_store.execute(query)) if word.size >= 4
+      end
 
       # if we didn't find anything, we add a random trigram
       trigrams.concat(data_store.execute('SELECT * FROM markov_trigrams ORDER BY RANDOM() LIMIT 1')) if trigrams.empty?
