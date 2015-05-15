@@ -21,7 +21,9 @@ module AIBot::Algorithm::Markov
   module MarkovUtils
     ##
     # A list of pronouns and their substitutes.
-    PRONOUN_LIST = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre}
+    PRONOUN_LIST = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre, :your => :my,
+                    :my => :your, :mine => :yours, :yours => :mine, :myself => :yourself, :yourself => :myself,
+                    :this => :that, :that => :this}
 
     ##
     # Substitutes certain words (i.e.: 'I' with 'You') to produce a more realistic effect when responding.
