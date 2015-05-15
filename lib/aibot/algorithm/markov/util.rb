@@ -20,16 +20,16 @@ end
 module AIBot::Algorithm::Markov
   module MarkovUtils
     ##
-    # A list of pronouns and their substitutes.
-    PRONOUN_LIST = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre, :your => :my,
-                    :my => :your, :mine => :yours, :yours => :mine, :myself => :yourself, :yourself => :myself,
-                    :this => :that, :that => :this}
+    # A hash of words mapped to their substitutes.
+    WORD_SUBSTITUTIONS = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre, :your => :my,
+                          :my => :your, :mine => :yours, :yours => :mine, :myself => :yourself, :yourself => :myself,
+                          :urself => :myself, :this => :that, :that => :this, :are => :am, :r => :am, :am => :are}
 
     ##
     # Substitutes certain words (i.e.: 'I' with 'You') to produce a more realistic effect when responding.
-    def substitute_pronouns(input)
+    def substitute_words(input)
       input = input.downcase.strip.remove_punctuation.split
-      input.map! { |word| PRONOUN_LIST[word.to_sym] || word }
+      input.map! { |word| WORD_SUBSTITUTIONS[word.to_sym] || word }
       input.join(' ')
     end
 
