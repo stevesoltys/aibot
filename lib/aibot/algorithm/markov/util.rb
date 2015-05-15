@@ -63,11 +63,11 @@ module AIBot::Algorithm::Markov
         trigrams.concat(data_store.execute(query))
       end if trigrams.empty?
 
-      # look for trigrams which contain any 'important' words in the sentence and add them
+      # look for trigrams which contain any 'important' words in the sentence and add them, if the current list is empty
       sentence.split.each do |word|
         query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}'"
         trigrams.concat(data_store.execute(query)) if word.size >= 4
-      end
+      end if trigrams.empty?
 
       # if we didn't find anything, we add a random trigram
       trigrams.concat(data_store.execute('SELECT * FROM markov_trigrams ORDER BY RANDOM() LIMIT 1')) if trigrams.empty?
