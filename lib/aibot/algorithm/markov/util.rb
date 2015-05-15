@@ -20,6 +20,18 @@ end
 module AIBot::Algorithm::Markov
   module MarkovUtils
     ##
+    # A list of pronouns and their substitutes.
+    PRONOUN_LIST = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre}
+
+    ##
+    # Substitutes certain words (i.e.: 'I' with 'You') to produce a more realistic effect when responding.
+    def substitute_pronouns(input)
+      input = input.downcase.strip.remove_punctuation.split
+      input.map! { |word| PRONOUN_LIST[word.to_sym] || word }
+      input.join(' ')
+    end
+
+    ##
     # Gets the trigram hash for a sentence.
     def get_trigram_hash(sentence)
       sentence = sentence.downcase.strip.remove_punctuation.split
@@ -65,8 +77,9 @@ module AIBot::Algorithm::Markov
 
       # look for trigrams which contain any 'important' words in the sentence and add them, if the current list is empty
       sentence.split.each do |word|
-        query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}'"
-        trigrams.concat(data_store.execute(query)) if word.size >= 4
+        query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}' " +
+            'ORDER BY RANDOM() LIMIT 1'
+        trigrams.concat(data_store.execute(query))
       end if trigrams.empty?
 
       # if we didn't find anything, we add a random trigram

@@ -31,6 +31,10 @@ module AIBot::Algorithm::Markov
     ##
     # Responds to the given input.
     def respond(data_store, input, context)
+      input = substitute_pronouns(input)
+
+      puts "input: #{input}"
+
       # we get our bias start trigram list
       trigrams = get_start_trigrams(data_store, input)
 
