@@ -23,7 +23,7 @@ end
 # Now we create our bot with the loaded configuration.
 bot = AIBot::create configuration do
   protocol :irc
-  algorithm :markov
+  algorithm :post
 end
 
 # Now we start the bot!
