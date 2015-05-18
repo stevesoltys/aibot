@@ -12,7 +12,7 @@ module AIBot::Algorithm::POST
   # Indicates whether the given input is worth learning.
   def should_learn(tagger, input)
     tag(tagger, input) do |token, tag|
-      return false unless IGNORE_TAGS[tag].nil?
+      return false if IGNORE_TAGS.include?(tag)
     end
     return (4..15).include?(input.split.length) && !input.has_hyperlink?
   end

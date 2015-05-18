@@ -27,7 +27,7 @@ module AIBot::Algorithm::POST
 
           store.execute('INSERT OR IGNORE INTO post_sentences(sentence) VALUES(?)', sentence)
         end
-      end if should_learn(input)
+      end if should_learn(@tagger, input)
     end
 
     ##
