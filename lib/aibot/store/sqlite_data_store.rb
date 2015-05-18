@@ -28,9 +28,9 @@ module AIBot::Store
 
     ##
     # Executes a query on this data store.
-    def execute(query)
+    def execute(query, params=nil)
       begin
-        @store.execute(query)
+        @store.execute(query, params)
       rescue SQLite3::Exception => exception
         raise "SQLite exception: #{exception}"
       end
