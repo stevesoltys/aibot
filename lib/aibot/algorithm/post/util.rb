@@ -5,15 +5,22 @@ module AIBot::Algorithm::POST
   REPLACEMENT_TAGS = ['NN', 'NNS', 'JJ', 'JJR', 'JJS', 'UH', 'MD', 'WDT', 'VB', 'VBN']
 
   ##
+  # An array containing part of speech tags which flag for us to ignore certain input while learning.
+  IGNORE_TAGS = ['SYM', 'PPD', 'PPL', 'PPR', 'LRB', 'RRB', 'FW', 'LS']
+
+  ##
   # Indicates whether the given input is worth learning.
-  def should_learn(input)
-    input.split.length >= 4 && !input.has_hyperlink? && !input.include?("'")
+  def should_learn(tagger, input)
+    tag(tagger, input) do |token, tag|
+      return false unless IGNORE_TAGS[tag].nil?
+    end
+    return (4..15).include?(input.split.length) && !input.has_hyperlink?
   end
 
   ##
   # Indicates whether we should replace a word with the given tag.
   def should_replace(tag)
-    REPLACEMENT_TAGS.include?(tag)
+    return REPLACEMENT_TAGS.include?(tag)
   end
 
   ##
