@@ -46,6 +46,7 @@ module AIBot::Algorithm::Markov
       # we loop and add to our response, without going over the maximum size
       while response.split.size < max_size
         # select trigrams which start with the last two tokens in our current trigram
+
         results = data_store.execute("SELECT * FROM markov_trigrams WHERE first='#{current_trigram[1]}' AND second='#{current_trigram[2]}'")
 
         # if there are no results, we can't continue
