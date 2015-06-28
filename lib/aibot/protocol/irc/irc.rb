@@ -41,7 +41,7 @@ module AIBot::Protocol::IRC
               bot = msg.bot
               message = msg.message
               if message.include?(bot.nick)
-                msg.safe_reply(aibot.respond(message.gsub(bot.nick, '')))
+                msg.safe_reply(aibot.respond(message.gsub(bot.nick, ''))) if network_config[:silenced].nil?
               else
                 aibot.learn(message)
               end
