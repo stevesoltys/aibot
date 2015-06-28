@@ -21,10 +21,7 @@ rescue Psych::SyntaxError
 end
 
 # Now we create our bot with the loaded configuration.
-bot = AIBot::create configuration do
-  protocol :irc
-  algorithm :post
-end
+bot = AIBot::create(configuration)
 
 # Now we start the bot!
 bot.start

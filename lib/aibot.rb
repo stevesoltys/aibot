@@ -1,5 +1,4 @@
 require 'aibot/aibot'
-require 'aibot/builder'
 require 'aibot/util/string'
 require 'aibot/store/sqlite_data_store'
 require 'aibot/algorithm/algorithm'
