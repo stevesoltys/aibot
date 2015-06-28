@@ -1,22 +1,9 @@
 module AIBot::Algorithm::Markov
   module MarkovUtils
-    ##
-    # A hash of words mapped to their substitutes.
-    WORD_SUBSTITUTIONS = {:i => :you, :you => :i, :u => :i, :ur => :im, :youre => :im, :im => :youre, :your => :my,
-                          :my => :your, :mine => :yours, :yours => :mine, :myself => :yourself, :yourself => :myself,
-                          :urself => :myself, :this => :that, :that => :this, :are => :am, :r => :am, :am => :are}
-
-    ##
-    # Substitutes certain words (i.e.: 'I' with 'You') to produce a more realistic effect when responding.
-    def substitute_words(input)
-      input = input.downcase.strip.remove_punctuation.split
-      input.map! { |word| WORD_SUBSTITUTIONS[word.to_sym] || word }
-      input.join(' ')
-    end
 
     ##
     # Gets the trigram hash for a sentence.
-    def get_trigram_hash(sentence)
+    def trigram_hash_for(sentence)
       sentence = sentence.downcase.strip.remove_punctuation.split
       trigram_hash = {}
       if sentence.size >= 3
@@ -35,41 +22,47 @@ module AIBot::Algorithm::Markov
     end
 
     ##
-    # Gets an array of trigrams that is bias for words that are in the given sentence. If it cannot find any trigrams
-    # for the given sentence, it will choose at random.
-    def get_start_trigrams(data_store, sentence)
-      trigrams = []
+    # Gets a trigram that is bias for words that are in the given sentence. If it cannot find any trigrams for the given
+    # sentence, it will choose at random.
+    def bias_trigram_for(data_store, sentence)
+      words = sentence.downcase.strip.remove_punctuation.split
 
-      # downcase, strip whitespace, and remove any punctuation from the input sentence
-      sentence = sentence.downcase.strip.remove_punctuation
+      # delete any input words which are not at least three characters long
+      words.each { |word| words.delete(word) unless word.size >= 3 }
 
-      # generate a trigram hash for this sentence
-      sentence_trigram_hash = get_trigram_hash(sentence)
+      # sort our list of input words, based upon size
+      words.sort! { |a, b| a.size >= b.size ? 1 : -1 }
 
-      # look for trigrams which are entirely contained in the sentence and add them
-      sentence_trigram_hash.each do |pair, word|
-        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' AND third='#{word}'"
-        trigrams.concat(data_store.execute(query))
-      end
-
-      # look for trigrams which contain pairs in the sentence and add them, if the current list is empty
-      sentence_trigram_hash.each do |pair, word|
-        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}'"
-        trigrams.concat(data_store.execute(query))
-      end if trigrams.empty?
-
-      # look for trigrams which contain any 'important' words in the sentence and add them, if the current list is empty
-      sentence.split.each do |word|
+      # iterate through the words, attempting to find a trigram which includes our given input word.
+      words.each do |word|
         query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}' " +
             'ORDER BY RANDOM() LIMIT 1'
-        trigrams.concat(data_store.execute(query))
-      end if trigrams.empty?
 
-      # if we didn't find anything, we add a random trigram
-      trigrams.concat(data_store.execute('SELECT * FROM markov_trigrams ORDER BY RANDOM() LIMIT 1')) if trigrams.empty?
+        trigram = data_store.execute(query).first
 
-      # return our results
-      return trigrams
+        return trigram unless trigram.nil?
+      end
+
+      # if nothing was found, select a random trigram.
+      return data_store.execute('SELECT * FROM markov_trigrams ORDER BY RANDOM() LIMIT 1').first
     end
+
+    ##
+    # Returns a random trigram which can be connected with the given trigram.
+    def connectable_trigram_for(data_store, trigram, type)
+      case type
+        when :before
+          query = "SELECT * FROM markov_trigrams WHERE second='#{trigram[0]}' AND third='#{trigram[1]}'" +
+              'ORDER BY RANDOM() LIMIT 1'
+        when :after
+          query = "SELECT * FROM markov_trigrams WHERE first='#{trigram[1]}' AND second='#{trigram[2]}'" +
+              'ORDER BY RANDOM() LIMIT 1'
+        else
+          raise 'Invalid trigram connection type given!'
+      end
+
+      return data_store.execute(query).first
+    end
+
   end
 end
