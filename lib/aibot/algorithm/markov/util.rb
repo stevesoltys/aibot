@@ -30,11 +30,8 @@ module AIBot::Algorithm::Markov
       # delete any input words which are not at least three characters long
       words.each { |word| words.delete(word) unless word.size >= 3 }
 
-      # sort our list of input words, based upon size
-      words.sort! { |a, b| a.size >= b.size ? 1 : -1 }
-
       # iterate through the words, attempting to find a trigram which includes our given input word.
-      words.each do |word|
+      words.shuffle.each do |word|
         query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}' " +
             'ORDER BY RANDOM() LIMIT 1'
 
