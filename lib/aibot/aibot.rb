@@ -5,9 +5,12 @@ module AIBot
     attr_reader :protocol, :algorithm,  :data_store
 
     def initialize(configuration)
-      raise "Configuration error! Could not find 'protocol' entry." unless configuration[:protocol]
-      @protocol = Protocol::for(configuration[:protocol][:type], configuration[:protocol])
-      @algorithm = Algorithm::for(configuration[:algorithm])
+      raise "Configuration error! Could not find 'protocol' entry." unless configuration[:protocol][:type]
+      @protocol = Protocol::for(configuration[:protocol][:type].to_sym, configuration[:protocol])
+
+      raise "Configuration error! Could not find 'algorithm' entry." unless configuration[:algorithm]
+      @algorithm = Algorithm::for(configuration[:algorithm].to_sym)
+
       raise "Configuration error! Could not find 'store' entry." unless configuration[:store]
       @data_store = Store::SQLiteDataStore.new(configuration[:store])
     end
@@ -36,5 +39,9 @@ module AIBot
     def respond(input, context=nil)
       @algorithm.respond(@data_store, input, context)
     end
+  end
+
+  def self.create(configuration)
+    return AIBot.new(configuration)
   end
 end
