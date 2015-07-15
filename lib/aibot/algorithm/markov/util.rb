@@ -25,7 +25,24 @@ module AIBot::Algorithm::Markov
     # Gets a trigram that is bias for words that are in the given sentence. If it cannot find any trigrams for the given
     # sentence, it will choose at random.
     def bias_trigram_for(data_store, sentence)
-      words = sentence.downcase.strip.remove_punctuation.split
+
+      sentence = sentence.downcase.strip.remove_punctuation
+
+      # get all trigrams for the input sentence
+      trigrams = trigram_hash_for(sentence)
+
+      # iterate through the trigrams, attempting to find a trigram which includes two words from the input trigram.
+      trigrams.shuffle.each do |pair, word|
+        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' " +
+            'ORDER BY RANDOM() LIMIT 1'
+
+        trigram = data_store.execute(query).first
+
+        return trigram unless trigram.nil?
+      end
+
+      # if we couldn't find a trigram match, we get a list of words in the sentence and look for a match
+      words = sentence.split
 
       # delete any input words which are not at least three characters long
       words.each { |word| words.delete(word) unless word.size >= 3 }
