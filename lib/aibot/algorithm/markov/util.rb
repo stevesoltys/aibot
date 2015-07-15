@@ -32,7 +32,7 @@ module AIBot::Algorithm::Markov
       trigrams = trigram_hash_for(sentence)
 
       # iterate through the trigrams, attempting to find a trigram which includes two words from the input trigram.
-      trigrams.shuffle.each do |pair, word|
+      trigrams.keys.shuffle.each do |pair|
         query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' " +
             'ORDER BY RANDOM() LIMIT 1'
 
