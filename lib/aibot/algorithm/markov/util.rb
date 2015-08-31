@@ -2,77 +2,87 @@ module AIBot::Algorithm::Markov
   module MarkovUtils
 
     ##
-    # Gets the trigram hash for a sentence.
-    def trigram_hash_for(sentence)
+    # Gets the quad hash for a sentence.
+    def quad_hash_for(sentence)
       sentence = sentence.downcase.strip.remove_punctuation.split
-      trigram_hash = {}
-      if sentence.size >= 3
-        current_trigram = sentence[0..1]
-        sentence[2..sentence.length].each do |word|
-          trigram_hash[current_trigram.clone] = word
-          current_trigram.shift
-          current_trigram << word
+      quad_hash = {}
+      if sentence.size >= 4
+        current_quad = sentence[0..2]
+        sentence[3..sentence.length].each do |word|
+          quad_hash[current_quad.clone] = word
+          current_quad.shift
+          current_quad << word
         end
-        trigram_hash
-      elsif sentence.size == 2
-        {[sentence[0], sentence[1]] => []}
+        quad_hash
+      elsif sentence.size == 3
+        {[sentence[0], sentence[1], sentence[2]] => []}
       else
         {}
       end
     end
 
     ##
-    # Gets a trigram that is bias for words that are in the given sentence. If it cannot find any trigrams for the given
+    # Gets a quad that is bias for words that are in the given sentence. If it cannot find any quads for the given
     # sentence, it will choose at random.
-    def bias_trigram_for(data_store, sentence)
+    def bias_quad_for(data_store, sentence)
 
       sentence = sentence.downcase.strip.remove_punctuation
 
-      # get all trigrams for the input sentence
-      trigrams = trigram_hash_for(sentence)
+      # get all quads for the input sentence
+      quads = quad_hash_for(sentence)
 
-      # iterate through the trigrams, attempting to find a trigram which includes two words from the input trigram.
-      trigrams.keys.shuffle.each do |pair|
-        query = "SELECT * FROM markov_trigrams WHERE first='#{pair[0]}' AND second='#{pair[1]}' " +
+      # iterate through the quads, attempting to find a quad which includes three words from the input quad.
+      quads.keys.shuffle.each do |pair|
+        query = "SELECT * FROM markov_quads WHERE first='#{pair[0]}' AND second='#{pair[1]}' AND third='#{pair[2]}'" +
             'ORDER BY RANDOM() LIMIT 1'
 
-        trigram = data_store.execute(query).first
+        quad = data_store.execute(query).first
 
-        return trigram unless trigram.nil?
+        return quad unless quad.nil?
       end
 
-      # if we couldn't find a trigram match, we get a list of words in the sentence and look for a match
+      # iterate through the quads, attempting to find a quad which includes two words from the input quad.
+      quads.keys.shuffle.each do |pair|
+        query = "SELECT * FROM markov_quads WHERE first='#{pair[0]}' AND second='#{pair[1]}'" +
+            'ORDER BY RANDOM() LIMIT 1'
+
+        quad = data_store.execute(query).first
+
+        return quad unless quad.nil?
+      end
+
+      # if we couldn't find a quad match, we get a list of words in the sentence and look for a match
       words = sentence.split
 
       # delete any input words which are not at least three characters long
       words.each { |word| words.delete(word) unless word.size >= 3 }
 
-      # iterate through the words, attempting to find a trigram which includes our given input word.
+      # iterate through the words, attempting to find a quad which includes our given input word.
       words.shuffle.each do |word|
-        query = "SELECT * FROM markov_trigrams WHERE first='#{word}' OR second='#{word}' OR third='#{word}' " +
-            'ORDER BY RANDOM() LIMIT 1'
+        query = "SELECT * FROM markov_quads WHERE first='#{word}' OR second='#{word}' OR third='#{word}' OR " +
+            "fourth='#{word}' ORDER BY RANDOM() LIMIT 1"
 
-        trigram = data_store.execute(query).first
+        quad = data_store.execute(query).first
 
-        return trigram unless trigram.nil?
+        return quad unless quad.nil?
       end
 
-      # if nothing was found, select a random trigram.
-      return data_store.execute('SELECT * FROM markov_trigrams ORDER BY RANDOM() LIMIT 1').first
+      # if nothing was found, select a random quad.
+      return data_store.execute('SELECT * FROM markov_quads ORDER BY RANDOM() LIMIT 1').first
     end
 
     ##
-    # Returns a random trigram which can be connected with the given trigram.
-    def connectable_trigram_for(data_store, trigram, type)
+    # Returns a random quad which can be connected with the given quad.
+    def connectable_quad_for(data_store, quad, type)
       case type
         when :before
-          query = "SELECT * FROM markov_trigrams WHERE second='#{trigram[0]}' AND third='#{trigram[1]}'" +
+          query = "SELECT * FROM markov_quads WHERE second='#{quad[0]}' AND third='#{quad[1]}' AND fourth='#{quad[2]}'" +
               'ORDER BY RANDOM() LIMIT 1'
         when :after
-          query = "SELECT * FROM markov_trigrams WHERE first='#{trigram[1]}' AND second='#{trigram[2]}'" +
+          query = "SELECT * FROM markov_quads WHERE first='#{quad[1]}' AND second='#{quad[2]}' AND third='#{quad[3]}'" +
               'ORDER BY RANDOM() LIMIT 1'
         else
-          raise 'Invalid trigram connection type given!'
+          raise 'Invalid quad connection type given!'
       end
 
       return data_store.execute(query).first
