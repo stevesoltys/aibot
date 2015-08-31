@@ -23,7 +23,7 @@ module AIBot::Algorithm::Markov
     def learn(data_store, input)
       data_store.transaction do |store|
         quad_hash_for(input.downcase).each do |pair, word|
-          store.execute("INSERT OR IGNORE INTO markov_quads VALUES('#{pair[0]}', '#{pair[1]}', '#{word}')")
+          store.execute("INSERT OR IGNORE INTO markov_quads VALUES('#{pair[0]}', '#{pair[1]}', '#{pair[2]}', '#{word}')")
         end
       end if should_learn(input)
     end
@@ -35,7 +35,7 @@ module AIBot::Algorithm::Markov
       input_quad = bias_quad_for(data_store, input)
 
       # start our response with the input quad.
-      response = "#{input_quad[0]} #{input_quad[1]} #{input_quad[2]}"
+      response = "#{input_quad[0]} #{input_quad[1]} #{input_quad[2]} #{input_quad[3]}"
 
       # add a random amount of connectable words before our input quad. the maximum is five.
       current_quad = input_quad
