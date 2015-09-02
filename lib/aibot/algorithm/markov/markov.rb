@@ -40,7 +40,7 @@ module AIBot::Algorithm::Markov
       # add a random amount of connectable words before our input quad. the maximum is five.
       current_quad = input_quad
 
-      rand(6).times do
+      rand(7..12).times do
         before_quad = connectable_quad_for(data_store, current_quad, :before)
         break if before_quad.nil?
 
@@ -52,7 +52,7 @@ module AIBot::Algorithm::Markov
       # add a random amount of connectable words after our input quad. the maximum is five.
       current_quad = input_quad
 
-      rand(8).times do
+      rand(7..12).times do
         after_quad = connectable_quad_for(data_store, current_quad, :after)
         break if after_quad.nil?
 
