@@ -33,20 +33,18 @@ module AIBot::Algorithm::Markov
 
       # iterate through the quads, attempting to find a quad which includes three words from the input quad.
       quads.keys.shuffle.each do |pair|
-        query = "SELECT * FROM markov_quads WHERE first='#{pair[0]}' AND second='#{pair[1]}' AND third='#{pair[2]}'" +
-            'ORDER BY RANDOM() LIMIT 1'
+        query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
 
-        quad = data_store.execute(query).first
+        quad = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
 
         return quad unless quad.nil?
       end
 
       # iterate through the quads, attempting to find a quad which includes two words from the input quad.
       quads.keys.shuffle.each do |pair|
-        query = "SELECT * FROM markov_quads WHERE first='#{pair[0]}' AND second='#{pair[1]}'" +
-            'ORDER BY RANDOM() LIMIT 1'
+        query = 'SELECT * FROM markov_quads WHERE first=? AND second=? ORDER BY RANDOM() LIMIT 1'
 
-        quad = data_store.execute(query).first
+        quad = data_store.execute(query, [pair[0], pair[1]]).first
 
         return quad unless quad.nil?
       end
@@ -59,10 +57,9 @@ module AIBot::Algorithm::Markov
 
       # iterate through the words, attempting to find a quad which includes our given input word.
       words.shuffle.each do |word|
-        query = "SELECT * FROM markov_quads WHERE first='#{word}' OR second='#{word}' OR third='#{word}' OR " +
-            "fourth='#{word}' ORDER BY RANDOM() LIMIT 1"
+        query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=? ORDER BY RANDOM() LIMIT 1'
 
-        quad = data_store.execute(query).first
+        quad = data_store.execute(query, [word, word, word, word]).first
 
         return quad unless quad.nil?
       end
@@ -76,16 +73,14 @@ module AIBot::Algorithm::Markov
     def connectable_quad_for(data_store, quad, type)
       case type
         when :before
-          query = "SELECT * FROM markov_quads WHERE second='#{quad[0]}' AND third='#{quad[1]}' AND fourth='#{quad[2]}'" +
-              'ORDER BY RANDOM() LIMIT 1'
+          query = 'SELECT * FROM markov_quads WHERE second=? AND third=? AND fourth=? ORDER BY RANDOM() LIMIT 1'
+          return data_store.execute(query, [quad[0], quad[1], quad[2]]).first
         when :after
-          query = "SELECT * FROM markov_quads WHERE first='#{quad[1]}' AND second='#{quad[2]}' AND third='#{quad[3]}'" +
-              'ORDER BY RANDOM() LIMIT 1'
+          query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
+          return data_store.execute(query, [quad[1], quad[2], quad[3]]).first
         else
           raise 'Invalid quad connection type given!'
       end
-
-      return data_store.execute(query).first
     end
 
   end

@@ -23,7 +23,7 @@ module AIBot::Algorithm::Markov
     def learn(data_store, input)
       data_store.transaction do |store|
         quad_hash_for(input.downcase).each do |pair, word|
-          store.execute("INSERT OR IGNORE INTO markov_quads VALUES('#{pair[0]}', '#{pair[1]}', '#{pair[2]}', '#{word}')")
+          store.execute('INSERT OR IGNORE INTO markov_quads VALUES(?, ?, ?, ?)', [pair[0], pair[1], pair[2], word])
         end
       end if should_learn(input)
     end
