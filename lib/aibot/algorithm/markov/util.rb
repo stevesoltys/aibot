@@ -5,19 +5,24 @@ module AIBot::Algorithm::Markov
     # Gets the quad hash for a sentence.
     def quad_hash_for(sentence)
       sentence = sentence.downcase.strip.split
-      quad_hash = {}
+
       if sentence.size >= 4
+
+        quad_hash = {}
         current_quad = sentence[0..2]
+
         sentence[3..sentence.length].each do |word|
           quad_hash[current_quad.clone] = word
           current_quad.shift
           current_quad << word
         end
-        quad_hash
+
+        return quad_hash
+
       elsif sentence.size == 3
-        {[sentence[0], sentence[1], sentence[2]] => []}
+        return {[sentence[0], sentence[1], sentence[2]] => []}
       else
-        {}
+        return {}
       end
     end
 
@@ -26,7 +31,7 @@ module AIBot::Algorithm::Markov
     # sentence, it will choose at random.
     def bias_quad_for(data_store, sentence)
 
-      sentence = sentence.downcase.strip
+      sentence = sentence.downcase.remove_punctuation.strip
 
       # get all quads for the input sentence
       quads = quad_hash_for(sentence)
