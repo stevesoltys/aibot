@@ -21,6 +21,8 @@ module AIBot::Algorithm::Markov
 
       elsif sentence.size == 3
         return {[sentence[0], sentence[1], sentence[2]] => []}
+      elsif sentence.size == 2
+        return {[sentence[0], sentence[1]] => []}
       else
         return {}
       end
@@ -38,11 +40,13 @@ module AIBot::Algorithm::Markov
 
       # iterate through the quads, attempting to find a quad which includes three words from the input quad.
       quads.keys.shuffle.each do |pair|
-        query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
+        if pair.size > 2
+          query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
 
-        quad = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
+          quad = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
 
-        return quad unless quad.nil?
+          return quad unless quad.nil?
+        end
       end
 
       # iterate through the quads, attempting to find a quad which includes two words from the input quad.
