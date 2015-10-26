@@ -27,6 +27,8 @@ module AIBot::Protocol::IRC
               bot_config.nick = network_config[:nick]
               bot_config.user = network_config[:user]
               bot_config.server = network_config[:server]
+              bot_config.port = network_config[:port] || 6667
+              bot_config.ssl.use = network_config[:ssl]
               bot_config.channels = network_config[:channels]
               bot_config.plugins.prefix = /#{network_config[:prefix] || '^::'}/
               bot_config.plugins.plugins = []
