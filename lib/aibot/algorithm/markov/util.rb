@@ -34,6 +34,7 @@ module AIBot::Algorithm::Markov
     def bias_quad_for(data_store, sentence)
 
       sentence = sentence.downcase.remove_punctuation.strip
+      words = sentence.split
 
       # get all quads for the input sentence
       quads = quad_hash_for(sentence)
@@ -42,51 +43,56 @@ module AIBot::Algorithm::Markov
       result = nil
 
       # iterate through the quads, attempting to find a quad which includes three words from the input quad.
-      data_store.transaction do |store|
-        quads.keys.shuffle.each do |pair|
-          if pair.size > 2
-            query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
+      if words.size > 2
+        data_store.transaction do |store|
+          quads.keys.shuffle.each do |pair|
+            if pair.size > 2
+              query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
 
-            result = store.execute(query, [pair[0], pair[1], pair[2]]).first
+              result = store.execute(query, [pair[0], pair[1], pair[2]]).first
+
+              break unless result.nil?
+            end
+          end
+        end
+
+        return result unless result.nil?
+      end
+
+
+      # iterate through the quads, attempting to find a quad which includes two words from the input quad.
+      if words.size > 1
+        data_store.transaction do |store|
+          quads.keys.shuffle.each do |pair|
+            query = 'SELECT * FROM markov_quads WHERE first=? AND second=? ORDER BY RANDOM() LIMIT 1'
+
+            result = store.execute(query, [pair[0], pair[1]]).first
 
             break unless result.nil?
           end
         end
+
+        return result unless result.nil?
       end
 
-      return result unless result.nil?
-
-      # iterate through the quads, attempting to find a quad which includes two words from the input quad.
-      data_store.transaction do |store|
-        quads.keys.shuffle.each do |pair|
-          query = 'SELECT * FROM markov_quads WHERE first=? AND second=? ORDER BY RANDOM() LIMIT 1'
-
-          result = store.execute(query, [pair[0], pair[1]]).first
-
-          break unless result.nil?
-        end
-      end
-
-      return result unless result.nil?
-
-      # if we couldn't find a quad match, we get a list of words in the sentence and look for a match
-      words = sentence.split
 
       # delete any input words which are not at least three characters long
       words.each { |word| words.delete(word) unless word.size >= 3 }
 
       # iterate through the words, attempting to find a quad which includes our given input word.
-      data_store.transaction do |store|
-        words.shuffle.each do |word|
-          query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=? ORDER BY RANDOM() LIMIT 1'
+      unless words.empty?
+        data_store.transaction do |store|
+          words.shuffle.each do |word|
+            query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=? ORDER BY RANDOM() LIMIT 1'
 
-          result = store.execute(query, [word, word, word, word]).first
+            result = store.execute(query, [word, word, word, word]).first
 
-          break unless result.nil?
+            break unless result.nil?
+          end
         end
-      end
 
-      return result unless result.nil?
+        return result unless result.nil?
+      end
 
       # if nothing was found, select a random quad.
       return data_store.execute('SELECT * FROM markov_quads ORDER BY RANDOM() LIMIT 1').first
