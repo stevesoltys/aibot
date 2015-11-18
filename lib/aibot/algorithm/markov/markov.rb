@@ -22,29 +22,30 @@ module AIBot::Algorithm::Markov
     ##
     # Learns from the given input, if it is deemed worth learning.
     def learn(data_store, input)
-      data_store.transaction do |store|
+      quad_hash_for(input.downcase).each do |pair, word|
 
-        quad_hash_for(input.downcase).each do |pair, word|
-          store.execute('INSERT OR IGNORE INTO markov_quads VALUES(?, ?, ?, ?)', [pair[0], pair[1], pair[2], word])
+        data_store.execute('INSERT OR IGNORE INTO markov_quads VALUES(?, ?, ?, ?)', [pair[0], pair[1], pair[2], word])
 
-          store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[0], pair[1], pair[2], '', ''])
-          store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[1], pair[2], pair[3], '', ''])
+        data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[0], pair[1], pair[2], '', ''])
 
-          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1'
+        query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1'
 
-          before_link = store.execute(query, [pair[0], pair[1], pair[2]]).first
+        before_link = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
 
-          after = before_link[4].split(' ')
+        after = before_link[4].split(' ')
 
-          unless after.include?(word)
-            after << word
-            after = after.join(' ')
+        unless after.include?(word)
+          after << word
+          after = after.join(' ')
 
-            update_query = 'UPDATE markov_links SET after=? WHERE first=? AND second=? AND third=?'
-            store.execute(update_query, [after, pair[0], pair[1], pair[2]])
-          end
+          update_query = 'UPDATE markov_links SET after=? WHERE first=? AND second=? AND third=?'
+          data_store.execute(update_query, [after, pair[0], pair[1], pair[2]])
+        end
 
-          after_link = store.execute(query, [pair[1], pair[2], word]).first
+        unless word.nil?
+          data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[1], pair[2], word, '', ''])
+
+          after_link = data_store.execute(query, [pair[1], pair[2], word]).first
 
           before = after_link[3].split(' ')
 
@@ -53,7 +54,7 @@ module AIBot::Algorithm::Markov
             before = before.join(' ')
 
             update_query = 'UPDATE markov_links SET before=? WHERE first=? AND second=? AND third=?'
-            store.execute(update_query, [before, pair[1], pair[2], word])
+            data_store.execute(update_query, [before, pair[1], pair[2], word])
           end
         end
 
