@@ -47,9 +47,9 @@ module AIBot::Algorithm::Markov
         data_store.transaction do |store|
           quads.keys.shuffle.each do |pair|
             if pair.size > 2
-              query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
+              query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=?'
 
-              result = store.execute(query, [pair[0], pair[1], pair[2]]).first
+              result = store.execute(query, [pair[0], pair[1], pair[2]]).sample
 
               break unless result.nil?
             end
@@ -64,9 +64,9 @@ module AIBot::Algorithm::Markov
       if words.size > 1
         data_store.transaction do |store|
           quads.keys.shuffle.each do |pair|
-            query = 'SELECT * FROM markov_quads WHERE first=? AND second=? ORDER BY RANDOM() LIMIT 1'
+            query = 'SELECT * FROM markov_quads WHERE first=? AND second=?'
 
-            result = store.execute(query, [pair[0], pair[1]]).first
+            result = store.execute(query, [pair[0], pair[1]]).sample
 
             break unless result.nil?
           end
@@ -83,9 +83,9 @@ module AIBot::Algorithm::Markov
       unless words.empty?
         data_store.transaction do |store|
           words.shuffle.each do |word|
-            query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=? ORDER BY RANDOM() LIMIT 1'
+            query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=?'
 
-            result = store.execute(query, [word, word, word, word]).first
+            result = store.execute(query, [word, word, word, word]).sample
 
             break unless result.nil?
           end
