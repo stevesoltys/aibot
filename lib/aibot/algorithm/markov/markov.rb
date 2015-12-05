@@ -9,7 +9,6 @@ module AIBot::Algorithm::Markov
     ##
     # Initialize the database.
     def init(data_store)
-      data_store.execute('CREATE TABLE IF NOT EXISTS markov_quads(first TEXT NOT NULL, second TEXT NOT NULL, third TEXT NOT NULL, fourth TEXT NOT NULL)')
       data_store.execute('CREATE TABLE IF NOT EXISTS markov_links(first TEXT NOT NULL, second TEXT NOT NULL, third TEXT NOT NULL, before TEXT NOT NULL, after TEXT NOT NULL, PRIMARY KEY (first, second, third))')
     end
 
@@ -22,40 +21,34 @@ module AIBot::Algorithm::Markov
     ##
     # Learns from the given input, if it is deemed worth learning.
     def learn(data_store, input)
-      quad_hash_for(input.downcase).each do |pair, word|
+      quads_for(input.downcase).each do |quad|
 
-        data_store.execute('INSERT OR IGNORE INTO markov_quads VALUES(?, ?, ?, ?)', [pair[0], pair[1], pair[2], word])
-
-        data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[0], pair[1], pair[2], '', ''])
+        data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [quad[0], quad[1], quad[2], '', ''])
 
         query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1'
 
-        before_link = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
-
+        before_link = data_store.execute(query, [quad[0], quad[1], quad[2]]).first
         after = before_link[4].split(' ')
 
-        unless after.include?(word)
-          after << word
+        unless after.include?(quad[3])
+          after << quad[3]
           after = after.join(' ')
 
           update_query = 'UPDATE markov_links SET after=? WHERE first=? AND second=? AND third=?'
-          data_store.execute(update_query, [after, pair[0], pair[1], pair[2]])
+          data_store.execute(update_query, [after, quad[0], quad[1], quad[2]])
         end
 
-        unless word.nil?
-          data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [pair[1], pair[2], word, '', ''])
+        data_store.execute('INSERT OR IGNORE INTO markov_links VALUES(?, ?, ?, ?, ?)', [quad[1], quad[2], quad[3], '', ''])
 
-          after_link = data_store.execute(query, [pair[1], pair[2], word]).first
+        after_link = data_store.execute(query, [quad[1], quad[2], quad[3]]).first
+        before = after_link[3].split(' ')
 
-          before = after_link[3].split(' ')
+        unless before.include?(quad[0])
+          before << quad[0]
+          before = before.join(' ')
 
-          unless before.include?(pair[0])
-            before << pair[0]
-            before = before.join(' ')
-
-            update_query = 'UPDATE markov_links SET before=? WHERE first=? AND second=? AND third=?'
-            data_store.execute(update_query, [before, pair[1], pair[2], word])
-          end
+          update_query = 'UPDATE markov_links SET before=? WHERE first=? AND second=? AND third=?'
+          data_store.execute(update_query, [before, quad[1], quad[2], quad[3]])
         end
 
       end if should_learn(input)
@@ -65,8 +58,24 @@ module AIBot::Algorithm::Markov
     # Responds to the given input.
     def respond(data_store, input, context)
 
+      time = Time.now
+
       # a quad which is bias towards words in our input.
-      input_quad = bias_quad_for(data_store, input)
+      input_link = bias_link_for(data_store, input)
+
+      # input quads, combined from the input link
+      input_quads = []
+
+      # list of words that come after the input link
+      after_list = input_link[4].split
+      input_quads << [input_link[0], input_link[1], input_link[2], after_list.sample] unless after_list.empty?
+
+      # list of words that come before the input link
+      before_list = input_link[3].split
+      input_quads << [before_list.sample, input_link[0], input_link[1], input_link[2]] unless before_list.empty?
+
+      # select a random input quad
+      input_quad = input_quads.sample
 
       # start our response with the input quad.
       response = "#{input_quad[0]} #{input_quad[1]} #{input_quad[2]} #{input_quad[3]}"
@@ -98,7 +107,6 @@ module AIBot::Algorithm::Markov
         end
 
       end
-
 
       return response.strip
     end
