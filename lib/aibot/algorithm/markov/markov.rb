@@ -58,8 +58,6 @@ module AIBot::Algorithm::Markov
     # Responds to the given input.
     def respond(data_store, input, context)
 
-      time = Time.now
-
       # a quad which is bias towards words in our input.
       input_link = bias_link_for(data_store, input)
 

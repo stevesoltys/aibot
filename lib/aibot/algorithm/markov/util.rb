@@ -45,6 +45,8 @@ module AIBot::Algorithm::Markov
 
           result_quads = data_store.execute(query, quad[0..2])
           results.concat(result_quads)
+
+          break unless results.empty?
         end
 
       elsif words.length == 3
@@ -60,7 +62,7 @@ module AIBot::Algorithm::Markov
         results.concat(result_links)
 
       elsif words.length == 1
-        query = 'SELECT * FROM markov_links WHERE first=?'
+        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 100000'
 
         word = words.first
         result_links = data_store.execute(query, [word])
@@ -72,7 +74,7 @@ module AIBot::Algorithm::Markov
 
       # iterate through the words, attempting to find a link which includes our given input word.
       words.shuffle.each do |word|
-        query = 'SELECT * FROM markov_links WHERE first=?'
+        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 100000'
         results.concat(data_store.execute(query, [word]))
 
         break unless results.empty?
