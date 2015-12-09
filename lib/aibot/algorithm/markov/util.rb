@@ -41,33 +41,42 @@ module AIBot::Algorithm::Markov
         quads = quads_for(sentence)
 
         quads.shuffle.each do |quad|
-          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=?'
+          result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', words).first.first
 
-          result_quads = data_store.execute(query, quad[0..2])
-          results.concat(result_quads)
+          if result_count > 0
+            query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1 OFFSET ?'
+            result_links = data_store.execute(query, quad[0..2].concat([rand(result_count)]))
+            results.concat(result_links)
+          end
 
           break unless results.empty?
         end
 
       elsif words.length == 3
-        query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=?'
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', words).first.first
 
-        result_links = data_store.execute(query, words)
-        results.concat(result_links)
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1 OFFSET ?'
+          result_links = data_store.execute(query, words.concat([rand(result_count)]))
+          results.concat(result_links)
+        end
 
       elsif words.length == 2
-        query = 'SELECT * FROM markov_links WHERE first=? AND second=?'
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=?', words).first.first
 
-        result_links = data_store.execute(query, words)
-        results.concat(result_links)
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? LIMIT 1 OFFSET ?'
+          result_links = data_store.execute(query, words.concat([rand(result_count)]))
+          results.concat(result_links)
+        end
 
       elsif words.length == 1
         word = words.first
 
-        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
-        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first
 
         if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
           result_links = data_store.execute(query, [word, rand(result_count)])
           results.concat(result_links)
         end
@@ -78,7 +87,7 @@ module AIBot::Algorithm::Markov
 
       # iterate through the words, attempting to find a link which includes our given input word.
       words.shuffle.each do |word|
-        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first
 
         if result_count > 0
           query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
@@ -90,7 +99,7 @@ module AIBot::Algorithm::Markov
 
       # if nothing was found, select a random link.
       if results.empty?
-        num_rows = data_store.execute('SELECT MAX(rowid) FROM markov_links').first.first.to_i
+        num_rows = data_store.execute('SELECT MAX(rowid) FROM markov_links').first.first
         results.concat(data_store.execute('SELECT * FROM markov_links WHERE rowid=?', [rand(num_rows)]))
       end
 
