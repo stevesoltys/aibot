@@ -41,7 +41,7 @@ module AIBot::Algorithm::Markov
         quads = quads_for(sentence)
 
         quads.shuffle.each do |quad|
-          result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', words).first.first
+          result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', quad[0..2]).first.first
 
           if result_count > 0
             query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1 OFFSET ?'
