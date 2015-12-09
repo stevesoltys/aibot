@@ -62,9 +62,11 @@ module AIBot::Algorithm::Markov
         results.concat(result_links)
 
       elsif words.length == 1
-        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 100000'
-
         word = words.first
+
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
+        query = "SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET #{rand(result_count)}"
+
         result_links = data_store.execute(query, [word])
         results.concat(result_links)
       end
@@ -74,7 +76,9 @@ module AIBot::Algorithm::Markov
 
       # iterate through the words, attempting to find a link which includes our given input word.
       words.shuffle.each do |word|
-        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 100000'
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
+
+        query = "SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET #{rand(result_count)}"
         results.concat(data_store.execute(query, [word]))
 
         break unless results.empty?
