@@ -65,10 +65,12 @@ module AIBot::Algorithm::Markov
         word = words.first
 
         result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
-        query = "SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET #{rand(result_count)}"
+        query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
 
-        result_links = data_store.execute(query, [word])
-        results.concat(result_links)
+        if result_count > 0
+          result_links = data_store.execute(query, [word, rand(result_count)])
+          results.concat(result_links)
+        end
       end
 
       # if we have any results, return one
@@ -78,8 +80,10 @@ module AIBot::Algorithm::Markov
       words.shuffle.each do |word|
         result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first.to_i
 
-        query = "SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET #{rand(result_count)}"
-        results.concat(data_store.execute(query, [word]))
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
+          results.concat(data_store.execute(query, [word, rand(result_count)]))
+        end
 
         break unless results.empty?
       end
