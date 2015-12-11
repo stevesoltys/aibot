@@ -2,79 +2,109 @@ module AIBot::Algorithm::Markov
   module MarkovUtils
 
     ##
-    # Gets the quad hash for a sentence.
-    def quad_hash_for(sentence)
-      sentence = sentence.downcase.strip.split
+    # An array of quads for a sentence.
+    def quads_for(sentence)
+      sentence = sentence.strip.split
 
       if sentence.size >= 4
 
-        quad_hash = {}
-        current_quad = sentence[0..2]
+        quads = []
+        current_quad = sentence[0..3]
 
-        sentence[3..sentence.length].each do |word|
-          quad_hash[current_quad.clone] = word
+        sentence[4..sentence.length].each do |word|
+          quads << current_quad.clone
+
           current_quad.shift
           current_quad << word
         end
 
-        return quad_hash
+        quads << current_quad.clone
 
-      elsif sentence.size == 3
-        return {[sentence[0], sentence[1], sentence[2]] => []}
-      elsif sentence.size == 2
-        return {[sentence[0], sentence[1]] => []}
+        return quads
       else
-        return {}
+        raise 'Sentence is too small.'
       end
     end
 
     ##
-    # Gets a quad that is bias for words that are in the given sentence. If it cannot find any quads for the given
+    # Gets a link that is bias for words that are in the given sentence. If it cannot find any links for the given
     # sentence, it will choose at random.
-    def bias_quad_for(data_store, sentence)
+    def bias_link_for(data_store, sentence)
 
       sentence = sentence.downcase.remove_punctuation.strip
+      words = sentence.split
 
-      # get all quads for the input sentence
-      quads = quad_hash_for(sentence)
+      # the result links
+      results = []
 
-      # iterate through the quads, attempting to find a quad which includes three words from the input quad.
-      quads.keys.shuffle.each do |pair|
-        if pair.size > 2
-          query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
+      if words.size >= 4
+        quads = quads_for(sentence)
 
-          quad = data_store.execute(query, [pair[0], pair[1], pair[2]]).first
+        quads.shuffle.each do |quad|
+          result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', quad[0..2]).first.first
 
-          return quad unless quad.nil?
+          if result_count > 0
+            query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1 OFFSET ?'
+            result_links = data_store.execute(query, quad[0..2].concat([rand(result_count)]))
+            results.concat(result_links)
+          end
+
+          break unless results.empty?
+        end
+
+      elsif words.length == 3
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=? AND third=?', words).first.first
+
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=? LIMIT 1 OFFSET ?'
+          result_links = data_store.execute(query, words.concat([rand(result_count)]))
+          results.concat(result_links)
+        end
+
+      elsif words.length == 2
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=? AND second=?', words).first.first
+
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? LIMIT 1 OFFSET ?'
+          result_links = data_store.execute(query, words.concat([rand(result_count)]))
+          results.concat(result_links)
+        end
+
+      elsif words.length == 1
+        word = words.first
+
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first
+
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
+          result_links = data_store.execute(query, [word, rand(result_count)])
+          results.concat(result_links)
         end
       end
 
-      # iterate through the quads, attempting to find a quad which includes two words from the input quad.
-      quads.keys.shuffle.each do |pair|
-        query = 'SELECT * FROM markov_quads WHERE first=? AND second=? ORDER BY RANDOM() LIMIT 1'
+      # if we have any results, return one
+      return results.sample unless results.empty?
 
-        quad = data_store.execute(query, [pair[0], pair[1]]).first
-
-        return quad unless quad.nil?
-      end
-
-      # if we couldn't find a quad match, we get a list of words in the sentence and look for a match
-      words = sentence.split
-
-      # delete any input words which are not at least three characters long
-      words.each { |word| words.delete(word) unless word.size >= 3 }
-
-      # iterate through the words, attempting to find a quad which includes our given input word.
+      # iterate through the words, attempting to find a link which includes our given input word.
       words.shuffle.each do |word|
-        query = 'SELECT * FROM markov_quads WHERE first=? OR second=? OR third=? OR fourth=? ORDER BY RANDOM() LIMIT 1'
+        result_count = data_store.execute('SELECT count(*) FROM markov_links WHERE first=?', [word]).first.first
 
-        quad = data_store.execute(query, [word, word, word, word]).first
+        if result_count > 0
+          query = 'SELECT * FROM markov_links WHERE first=? LIMIT 1 OFFSET ?'
+          results.concat(data_store.execute(query, [word, rand(result_count)]))
+        end
 
-        return quad unless quad.nil?
+        break unless results.empty?
       end
 
-      # if nothing was found, select a random quad.
-      return data_store.execute('SELECT * FROM markov_quads ORDER BY RANDOM() LIMIT 1').first
+      # if nothing was found, select a random link.
+      if results.empty?
+        num_rows = data_store.execute('SELECT MAX(rowid) FROM markov_links').first.first
+        results.concat(data_store.execute('SELECT * FROM markov_links WHERE rowid=?', [rand(num_rows)]))
+      end
+
+      # return a random result
+      return results.sample
     end
 
     ##
@@ -82,11 +112,25 @@ module AIBot::Algorithm::Markov
     def connectable_quad_for(data_store, quad, type)
       case type
         when :before
-          query = 'SELECT * FROM markov_quads WHERE second=? AND third=? AND fourth=? ORDER BY RANDOM() LIMIT 1'
-          return data_store.execute(query, [quad[0], quad[1], quad[2]]).first
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=?'
+
+          link = data_store.execute(query, [quad[0], quad[1], quad[2]]).sample
+          return nil if link.nil?
+
+          before_list = link[3].split(' ')
+          return nil if before_list.empty?
+
+          return [before_list.sample, quad[0], quad[1], quad[2]]
         when :after
-          query = 'SELECT * FROM markov_quads WHERE first=? AND second=? AND third=? ORDER BY RANDOM() LIMIT 1'
-          return data_store.execute(query, [quad[1], quad[2], quad[3]]).first
+          query = 'SELECT * FROM markov_links WHERE first=? AND second=? AND third=?'
+
+          link = data_store.execute(query, [quad[1], quad[2], quad[3]]).sample
+          return nil if link.nil?
+
+          after_list = link[4].split(' ')
+          return nil if after_list.empty?
+
+          return [quad[1], quad[2], quad[3], after_list.sample]
         else
           raise 'Invalid quad connection type given!'
       end
