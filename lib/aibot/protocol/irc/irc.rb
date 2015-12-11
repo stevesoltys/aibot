@@ -42,11 +42,27 @@ module AIBot::Protocol::IRC
             on :message do |msg|
               bot = msg.bot
               message = msg.message
+
               if message.include?(bot.nick)
-                msg.safe_reply(aibot.respond(message.gsub(bot.nick, ''))) if network_config[:silenced].nil?
+                message = message.gsub(bot.nick, '').squeeze(' ')
+                response = aibot.respond(message).split
+
+                if response.first.eql?("\x01action")
+                  response.delete(response.first)
+                  msg.safe_action_reply(response.join(' ')) if network_config[:silenced].nil?
+                else
+                  msg.safe_reply(response.join(' ')) if network_config[:silenced].nil?
+                end
+
               else
                 aibot.learn(message)
               end
+            end
+
+            # Auto join after being kicked.
+            on :kick do |msg|
+              bot = msg.bot
+              bot.join(msg.channel.name)
             end
           end
           @bots << bot
