@@ -7,6 +7,8 @@ module AIBot::Plugin::Eval
 
   class Rust < CommandPlugin
 
+    MAX_RESPONSE_LENGTH = 120
+
     def initialize
       super('~', 'rust')
     end
@@ -25,7 +27,7 @@ module AIBot::Plugin::Eval
       json_response = RestClient.post('https://play.rust-lang.org/evaluate.json', request, :content_type => :json, :accept => :json)
       response = JSON::parse(json_response)
 
-      response = (response['program'] || response['rustc']).split(/\r|\n/).first
+      response = (response['program'] || response['rustc']).split(/\r|\n/).first[0, MAX_RESPONSE_LENGTH]
 
       message.reply("#{message.sender}: => #{response}")
     end
