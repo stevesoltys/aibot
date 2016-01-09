@@ -30,10 +30,24 @@ module AIBot::Protocol::IRC
               bot_config.port = network_config[:port] || 6667
               bot_config.ssl.use = network_config[:ssl]
               bot_config.channels = network_config[:channels]
-              bot_config.plugins.prefix = /#{network_config[:prefix] || '^::'}/
+
+              bot_config.plugins.prefix = /#{network_config[:plugin_prefix] || '^::'}/
               bot_config.plugins.plugins = []
-              network_config[:plugins].each do |plugin|
-                bot_config.plugins.plugins << Kernel.const_get(plugin)
+
+              network_config[:plugins].each do |plugin_name, plugin_config|
+                require_path = plugin_config[:require_path]
+                class_path = plugin_config[:class_path]
+
+                unless class_path.nil?
+                  require require_path unless require_path.nil?
+
+                  plugin_constant = Kernel.const_get(class_path)
+                  bot_config.plugins.plugins << plugin_constant
+
+                  configuration = plugin_config[:configuration]
+                  bot_config.plugins.options[plugin_constant] = configuration unless configuration.nil?
+                end
+
               end if network_config[:plugins]
             end
 
