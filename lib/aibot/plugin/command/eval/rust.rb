@@ -7,6 +7,8 @@ module AIBot::Plugin::Eval
 
   class Rust < CommandPlugin
 
+    RESOURCE_URL = 'https://play.rust-lang.org/evaluate.json'
+
     MAX_RESPONSE_LENGTH = 120
 
     def initialize
@@ -24,7 +26,7 @@ module AIBot::Plugin::Eval
           'color' => false
       }.to_json
 
-      json_response = RestClient.post('https://play.rust-lang.org/evaluate.json', request, :content_type => :json, :accept => :json)
+      json_response = RestClient.post(RESOURCE_URL, request, :content_type => :json, :accept => :json)
       response = JSON::parse(json_response)
 
       response = (response['program'] || response['rustc']).split(/\r|\n/).first[0, MAX_RESPONSE_LENGTH]
