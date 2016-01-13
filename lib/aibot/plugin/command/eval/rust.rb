@@ -15,7 +15,7 @@ module AIBot::Plugin::Eval
       super('~', 'rust')
     end
 
-    def execute_command(message, parameters)
+    def execute_command(bot, message, parameters)
 
       request = {
           'code' => "fn main() { #{parameters} }",

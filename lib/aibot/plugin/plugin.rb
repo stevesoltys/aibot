@@ -38,7 +38,7 @@ module AIBot::Plugin
 
     ##
     # Executes this plugin for the given message.
-    def execute(message)
+    def execute(bot, message)
       raise 'SubclassResponsibility'
     end
 

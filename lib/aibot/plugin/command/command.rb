@@ -10,14 +10,14 @@ module AIBot::Plugin::Command
       match(/^#{prefix}#{command} (.*)/)
     end
 
-    def execute(message)
+    def execute(bot, message)
       matched = @match_regex.match(message.message).to_a
       parameters = matched[1] || ''
 
-      execute_command(message, parameters)
+      execute_command(bot, message, parameters)
     end
 
-    def execute_command(message, parameters)
+    def execute_command(bot, message, parameters)
       raise 'SubclassResponsibility'
     end
 

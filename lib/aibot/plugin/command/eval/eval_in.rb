@@ -31,7 +31,7 @@ module AIBot::Plugin::Eval
 
     ##
     # Executes a command, given the <i>Message</i> and parameters.
-    def execute_command(message, parameters)
+    def execute_command(bot, message, parameters)
 
       request = {
           'utf8' => 'λ',

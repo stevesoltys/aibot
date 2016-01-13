@@ -31,7 +31,7 @@ module AIBot
     ##
     # Called by a <i>Protocol</i> when any message is received. Fires all <i>Plugin</i>s that match for the message.
     def message_received(message)
-      Plugin::all_matching(message).each { |plugin| plugin.execute(message) }
+      Plugin::all_matching(message).each { |plugin| plugin.execute(self, message) }
     end
 
     ##
