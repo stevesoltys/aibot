@@ -91,6 +91,12 @@ module AIBot::Protocol::IRC
               aibot.message_received(IRCMessage.new(msg))
             end
 
+            # Auto join after being invited.
+            on :invite do |msg|
+              bot = msg.bot
+              bot.join(msg.channel.name)
+            end
+
             # Auto join after being kicked.
             on :kick do |msg|
               bot = msg.bot
