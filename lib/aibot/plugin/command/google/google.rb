@@ -8,7 +8,7 @@ module AIBot::Plugin::Google
   class GoogleCommand < CommandPlugin
 
     def initialize
-      super('~', 'google')
+      super('~', 'google', 'g')
     end
 
     def clean_content(content)

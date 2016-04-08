@@ -8,7 +8,7 @@ module AIBot::Plugin::Google
   class DuckDuckGoCommand < CommandPlugin
 
     def initialize
-      super('~', 'duckduckgo')
+      super('~', 'duckduckgo', 'ddg')
     end
 
     def clean_content(content)
