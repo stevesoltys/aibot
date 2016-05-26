@@ -18,7 +18,7 @@ module AIBot::Plugin::Eval
     def execute_command(bot, message, parameters)
 
       request = {
-          'code' => "fn main() { #{parameters} }",
+          'code' => wrap_code(parameters),
           'version' => 'stable',
           'optimize' => '0',
           'test' => false,
@@ -33,6 +33,20 @@ module AIBot::Plugin::Eval
 
       message.reply("#{message.sender}: => #{response}")
     end
+
+    def wrap_code(code)
+      <<eot
+#![allow(dead_code, unused_variables)]
+static VERSION: &'static str = "%(version)s";
+fn show<T: std::fmt::Debug>(e: T) { println!("{:?}", e) }
+fn main() {
+    show({
+        #{code}
+    });
+}
+eot
+    end
+
   end
 
   AIBot::Plugin::register(:rust, Rust.new)
