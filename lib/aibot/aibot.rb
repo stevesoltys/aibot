@@ -2,7 +2,7 @@ module AIBot
   ##
   # The main class for an AIBot. Contains the protocol, data store, and algorithm.
   class AIBot
-    attr_reader :protocol, :algorithm,  :data_store
+    attr_reader :protocol, :algorithm, :data_store
 
     def initialize(configuration)
       raise "Configuration error! Could not find 'protocol' entry." unless configuration[:protocol][:type]
@@ -29,13 +29,19 @@ module AIBot
     end
 
     ##
-    # Learns from the given input.
+    # Called by a <i>Protocol</i> when any message is received. Fires all <i>Plugin</i>s that match for the message.
+    def message_received(message)
+      Plugin::all_matching(message).each { |plugin| plugin.execute(self, message) }
+    end
+
+    ##
+    # Learns from the given input. Called by a <i>Protocol</i> when a message is deemed worth learning.
     def learn(input)
       @algorithm.learn(@data_store, input)
     end
 
     ##
-    # Responds to the given input, with the option of context.
+    # Responds to the given input, with the option of context. Called by a <i>Protocol</i> when a message is deemed worth responding to.
     def respond(input, context=nil)
       @algorithm.respond(@data_store, input, context)
     end

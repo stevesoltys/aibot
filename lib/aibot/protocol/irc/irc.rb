@@ -2,6 +2,22 @@ require 'cinch'
 
 module AIBot::Protocol::IRC
   include AIBot::Protocol
+  include AIBot::Message
+
+  ##
+  # An IRC message that has been received.
+  class IRCMessage < Message
+
+    def initialize(cinch_msg)
+      super(cinch_msg.user, cinch_msg.message)
+
+      @cinch_msg = cinch_msg
+    end
+
+    def reply(response)
+      @cinch_msg.safe_reply(response)
+    end
+  end
 
   ##
   # The IRC protocol.
@@ -71,6 +87,14 @@ module AIBot::Protocol::IRC
               else
                 aibot.learn(message)
               end
+
+              aibot.message_received(IRCMessage.new(msg))
+            end
+
+            # Auto join after being invited.
+            on :invite do |msg|
+              bot = msg.bot
+              bot.join(msg.channel.name)
             end
 
             # Auto join after being kicked.
