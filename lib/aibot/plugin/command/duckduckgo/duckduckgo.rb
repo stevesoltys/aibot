@@ -17,7 +17,7 @@ module AIBot::Plugin::Google
 
     def execute_command(bot, message, parameters)
 
-      result = DuckDuckGo::search(parameters).first
+      result = DuckDuckGo::search(:query => parameters).first
 
       if result.nil?
         message.reply("[DuckDuckGo] No results found for '#{parameters}'.")
